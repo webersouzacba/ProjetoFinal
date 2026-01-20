@@ -1,54 +1,84 @@
-# Projeto Final PWA — Back-end (Node.js + Express + PostgreSQL + Prisma)
+# Projeto Final PWA — Prova de Conceito (Monorepo)
 
-Este back-end implementa a API REST do projeto final descrito na **Atividade 5.1**, com organização em camadas **Routes → Controllers → Services → Repositories**, autenticação **Google OAuth2** e persistência em **PostgreSQL** (local) via **Prisma**.
+Estrutura do repositório:
 
-## 1) Pré-requisitos
-- Node.js 18+ (recomendado)
-- Docker + Docker Compose (para o Postgres local)
+- `infra/`: infraestrutura local (PostgreSQL via Docker Compose)
+- `backend/`: API REST (Node.js + Express + Prisma)
+- `frontend/`: SPA (Vue 3 + Vite) — em construção
 
-## 2) Subir o banco local
+## 1) Banco de Dados (local)
+
+### Subir o Postgres via Docker
+
+> A porta **5432** precisa estar disponível. Se você já tem um Postgres local rodando na 5432, pare o serviço ou altere a porta no `infra/docker-compose.yml`.
+
 ```bash
+cd infra
 docker compose up -d
 ```
 
-## 3) Configurar variáveis de ambiente
-```bash
-copy .env.example .env  # (Windows PowerShell) ou cp .env.example .env
-```
-Preencha `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
+Credenciais padrão (POC):
 
-## 4) Instalar dependências
+- Host: `localhost`
+- Porta: `5432`
+- Database: `app_db`
+- User: `app_user`
+- Password: `meiw@2026`
+
+## 2) Backend (Node.js + Express + Prisma)
+
+### Configurar variáveis de ambiente
+
 ```bash
+cd backend
+copy .env.example .env  # Windows PowerShell (ou cp .env.example .env)
+```
+
+Ajuste o `DATABASE_URL` no `.env` se necessário.
+
+> OAuth Google é opcional nesta fase. Se `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` não estiverem configurados, a API sobe com OAuth desativado.
+
+### Instalar dependências e gerar Prisma Client
+
+```bash
+cd backend
 npm install
+npx prisma generate
 ```
 
-## 5) Criar schema e gerar client
+### Sincronizar o schema com o banco existente
+
+Como o banco já foi criado localmente, a abordagem padrão é **introspecção**:
+
 ```bash
-npx prisma migrate dev --name init
+cd backend
+npx prisma db pull
+npx prisma generate
 ```
 
-## 6) Popular com dados iniciais (seed)
-```bash
-npm run seed
-```
+### Rodar a API
 
-## 7) Rodar em desenvolvimento
 ```bash
+cd backend
 npm run dev
 ```
 
-## 8) Endpoints principais
-- `GET /health`
-- `GET /auth/google` (inicia OAuth)
-- `GET /auth/google/callback`
-- Visitante:
-  - `GET /api/docentes`
-  - `GET /api/docentes/:id`
-- Docente autenticado (Bearer JWT):
-  - `GET /api/propostas/mine`
-  - `GET /api/propostas/mine/:id`
-  - `POST /api/propostas/mine`
-  - `PUT /api/propostas/mine/:id`
-  - `DELETE /api/propostas/mine/:id`
+A API ficará em `http://localhost:9002`.
 
-> Observação: O callback do OAuth redireciona para `FRONTEND_URL/auth/callback?token=...` por padrão.
+Endpoints úteis:
+
+- `GET /health`
+- `GET /debug/db` (temporário, para validar conexão)
+- `GET /api/docentes`
+- `GET /api/propostas`
+  - filtros: `?status=publicada` e/ou `?orientador_id=1`
+
+## 3) Frontend (Vue 3 + Vite)
+
+A pasta `frontend/` será usada para a interface web. Para iniciar:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
