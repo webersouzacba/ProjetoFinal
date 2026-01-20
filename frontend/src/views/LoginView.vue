@@ -1,0 +1,42 @@
+<template>
+  <div class="container py-4">
+    <h1 class="h4 mb-3">Login (Google OAuth 2.0)</h1>
+
+    <div class="alert alert-info" role="alert">
+      <div class="mb-2">
+        Este projeto usa o fluxo OAuth2 do Google no <strong>back-end</strong>. Se as variáveis
+        <code>GOOGLE_CLIENT_ID</code>/<code>GOOGLE_CLIENT_SECRET</code> não estiverem configuradas,
+        o endpoint <code>/auth/google</code> retorna <strong>503</strong>.
+      </div>
+      <div class="mb-0">
+        Quando estiver configurado, clique no botão abaixo para iniciar o login.
+      </div>
+    </div>
+
+    <button class="btn btn-danger" type="button" @click="login">
+      Entrar com Google
+    </button>
+
+    <hr class="my-4" />
+
+    <p class="text-muted mb-1">
+      Estado do token (apenas para POC):
+    </p>
+    <pre class="bg-light p-3 rounded border small mb-0">{{ tokenPreview }}</pre>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { apiBaseUrl } from '../services/apiBase';
+
+function login() {
+  // abre o endpoint do back-end (não é XHR; é navegação)
+  window.location.href = `${apiBaseUrl()}/auth/google`;
+}
+
+const tokenPreview = computed(() => {
+  const t = localStorage.getItem('access_token');
+  return t ? `${t.slice(0, 18)}...` : '(sem token)';
+});
+</script>
