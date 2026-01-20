@@ -1,0 +1,59 @@
+const repo = require('../repositories/propostaRepository');
+
+async function listPublic({ status, orientadorId } = {}) {
+  return repo.listPublic({ status, orientadorId });
+}
+
+
+async function listMine(idDocente) {
+  return repo.listByOrientador(idDocente);
+}
+
+async function getMine(idDocente, propostaId) {
+  const proposta = await repo.findById(propostaId);
+  if (!proposta) {
+    const err = new Error('Proposta não encontrada.');
+    err.statusCode = 404;
+    throw err;
+  }
+  // ownership: no schema real é id_orientador
+  if (proposta.id_orientador !== BigInt(idDocente)) {
+    const err = new Error('Acesso negado: proposta não pertence a este docente.');
+    err.statusCode = 403;
+    throw err;
+  }
+  return proposta;
+}
+
+async function createMine(idDocente, dto) {
+  return repo.create({
+    id_orientador: idDocente,
+    titulo: dto.titulo,
+    descricao: dto.descricao ?? dto.descricao_objetivos ?? null, // compat
+    status: dto.status,
+    coorientadoresIds: dto.coorientadores_ids,
+    alunosIds: dto.alunos_ids,
+    palavrasChave: dto.palavras_chave
+  });
+}
+
+async function updateMine(idDocente, propostaId, dto) {
+  await getMine(idDocente, propostaId);
+
+  return repo.update({
+    id_proposta: propostaId,
+    titulo: dto.titulo,
+    descricao: dto.descricao ?? dto.descricao_objetivos,
+    status: dto.status,
+    coorientadoresIds: dto.coorientadores_ids,
+    alunosIds: dto.alunos_ids,
+    palavrasChave: dto.palavras_chave
+  });
+}
+
+async function deleteMine(idDocente, propostaId) {
+  await getMine(idDocente, propostaId);
+  return repo.remove(propostaId);
+}
+
+module.exports = { listPublic,listMine, getMine, createMine, updateMine, deleteMine };

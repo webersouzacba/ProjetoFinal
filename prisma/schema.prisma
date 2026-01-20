@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Docente {
+  id_docente              BigInt                 @id @default(autoincrement())
+  nome                    String                 @db.VarChar(120)
+  email                   String?                @unique @db.VarChar(160)
+  createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  googleSub               String?                @unique(map: "uq_docentes_google_sub") @map("google_sub") @db.VarChar(80)
+  proposta_coorientadores PropostaCoorientador[]
+  propostas               Proposta[]
+
+  @@map("docentes")
+}
+
+model Aluno {
+  id_aluno        BigInt          @id @default(autoincrement())
+  nome            String          @db.VarChar(120)
+  email           String?         @unique @db.VarChar(160)
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  proposta_alunos PropostaAluno[]
+
+  @@map("alunos")
+}
+
+model Proposta {
+  id_proposta             BigInt                 @id @default(autoincrement())
+  titulo                  String                 @db.VarChar(200)
+  descricao               String?
+  id_orientador           BigInt
+  status                  proposta_status        @default(rascunho)
+  createdAt               DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  proposta_alunos         PropostaAluno[]
+  proposta_coorientadores PropostaCoorientador[]
+  proposta_palavras_chave PropostaPalavraChave[]
+  docentes                Docente                @relation(fields: [id_orientador], references: [id_docente], map: "fk_propostas_orientador")
+
+  @@index([id_orientador], map: "idx_propostas_orientador")
+  @@index([status], map: "idx_propostas_status")
+  @@map("propostas")
+}
+
+model PropostaCoorientador {
+  id_proposta BigInt
+  id_docente  BigInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  docentes    Docente  @relation(fields: [id_docente], references: [id_docente], map: "fk_pc_docente")
+  propostas   Proposta @relation(fields: [id_proposta], references: [id_proposta], onDelete: Cascade, map: "fk_pc_proposta")
+
+  @@id([id_proposta, id_docente])
+  @@index([id_docente], map: "idx_pc_docente")
+  @@map("proposta_coorientadores")
+}
+
+model PropostaAluno {
+  id_proposta BigInt
+  id_aluno    BigInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  alunos      Aluno    @relation(fields: [id_aluno], references: [id_aluno], map: "fk_pa_aluno")
+  propostas   Proposta @relation(fields: [id_proposta], references: [id_proposta], onDelete: Cascade, map: "fk_pa_proposta")
+
+  @@id([id_proposta, id_aluno])
+  @@index([id_aluno], map: "idx_pa_aluno")
+  @@map("proposta_alunos")
+}
+
+model PropostaPalavraChave {
+  id_proposta BigInt
+  palavra     String   @map("palavra_chave") @db.VarChar(80)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  propostas   Proposta @relation(fields: [id_proposta], references: [id_proposta], onDelete: Cascade, map: "fk_ppc_proposta")
+
+  @@id([id_proposta, palavra])
+  @@index([palavra], map: "idx_ppc_palavra")
+  @@map("proposta_palavras_chave")
+}
+
+enum proposta_status {
+  rascunho
+  publicada
+  atribuida
+  encerrada
+}
