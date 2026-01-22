@@ -90,3 +90,5 @@ enum proposta_status {
   atribuida
   encerrada
 }
+
+

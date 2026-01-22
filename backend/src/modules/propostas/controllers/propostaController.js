@@ -1,5 +1,8 @@
 const service = require('../services/propostaService');
-const { propostaCreateSchema, propostaUpdateSchema } = require('../services/propostaSchemas');
+const {
+  propostaCreateSchema,
+  propostaUpdateSchema
+} = require('../services/propostaSchemas');
 
 // helper: converte BigInt para string (evita 500 no res.json)
 function toJsonSafe(value) {
@@ -11,15 +14,17 @@ function toJsonSafe(value) {
 function getAuthDocenteId(req) {
   // requireAuth deve setar req.user; ainda assim, defesa extra:
   const id = req.user?.id_docente;
+
   if (id === undefined || id === null) {
     const err = new Error('Não autenticado.');
     err.statusCode = 401;
     throw err;
   }
+
   return id;
 }
 
-// PUBLICO (POC)
+// PÚBLICO (POC)
 async function listPublic(req, res, next) {
   try {
     const filtros = {
@@ -34,6 +39,20 @@ async function listPublic(req, res, next) {
   }
 }
 
+// PÚBLICO (POC) – detalhe
+async function getPublic(req, res, next) {
+  try {
+    const proposta = await service.getPublic(req.params.id);
+
+    if (!proposta) {
+      return res.status(404).json({ error: 'Proposta não encontrada.' });
+    }
+
+    return res.json(toJsonSafe(proposta));
+  } catch (err) {
+    return next(err);
+  }
+}
 
 // AUTENTICADO (quando OAuth estiver ativo)
 async function listMine(req, res, next) {
@@ -99,6 +118,7 @@ async function deleteMine(req, res, next) {
 
 module.exports = {
   listPublic,
+  getPublic,
   listMine,
   getMine,
   createMine,

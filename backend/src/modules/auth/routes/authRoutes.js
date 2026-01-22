@@ -4,14 +4,6 @@ const { authCallback } = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get(
-  '/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    session: false
-  })
-);
-
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   router.get('/google', (req, res) =>
@@ -23,6 +15,16 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   module.exports = { authRoutes: router };
   return;
 }
+
+
+router.get(
+  '/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false
+  })
+);
+
 
 router.get(
   '/google/callback',

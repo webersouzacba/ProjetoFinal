@@ -4,7 +4,7 @@ const { requireAuth } = require('../../../middlewares/requireAuth');
 
 const router = express.Router();
 
-// Público (POC): lista propostas com orientador/alunos/coorientadores/palavras-chave
+// Público (POC): lista
 router.get('/', controller.listPublic);
 
 // Docente autenticado (quando OAuth estiver ativo)
@@ -14,5 +14,7 @@ router.post('/mine', requireAuth, controller.createMine);
 router.put('/mine/:id', requireAuth, controller.updateMine);
 router.delete('/mine/:id', requireAuth, controller.deleteMine);
 
-module.exports = { propostaRoutes: router };
+// ✅ POR ÚLTIMO: detalhe público (não captura "mine")
+router.get('/:id', controller.getPublic);
 
+module.exports = { propostaRoutes: router };

@@ -11,6 +11,10 @@ const { authRoutes } = require('./modules/auth/routes/authRoutes');
 const { docenteRoutes } = require('./modules/docentes/routes/docenteRoutes');
 const { propostaRoutes } = require('./modules/propostas/routes/propostaRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
+const { alunoRoutes } = require('./modules/alunos/routes/alunoRoutes');
+
+const { palavrasChaveRoutes } = require('./modules/palavrasChave/routes/palavrasChaveRoutes');
+
 
 const app = express();
 
@@ -18,6 +22,12 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || true, credentials: false }));
 app.use(express.json({ limit: '1mb' }));
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/swagger');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
+
 app.use(morgan('dev'));
 
 // Passport (sempre inicializa o middleware)
@@ -36,23 +46,26 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 //Rota de teste temporária
 const { prisma } = require('./config/prisma');
 
-app.get('/debug/db', async (req, res, next) => {
-  try {
-    const docentes = await prisma.docente.count();
-    const alunos = await prisma.aluno.count();
-    const propostas = await prisma.proposta.count();
-    res.json({ docentes, alunos, propostas });
-  } catch (e) {
-    next(e);
-  }
-});
-
-
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/debug/db', async (req, res, next) => {
+    try {
+      const docentes = await prisma.docente.count();
+      const alunos = await prisma.aluno.count();
+      const propostas = await prisma.proposta.count();
+      res.json({ docentes, alunos, propostas });
+    } catch (e) {
+      next(e);
+    }
+  });
+}
 
 // Rotas
 app.use('/auth', authRoutes);
 app.use('/api/docentes', docenteRoutes);
 app.use('/api/propostas', propostaRoutes);
+app.use('/api/alunos', alunoRoutes);
+
+app.use('/api/palavras-chave', palavrasChaveRoutes);
 
 // Erros
 app.use(errorHandler);

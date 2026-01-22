@@ -7,7 +7,7 @@ function authCallback(req, res) {
 
   const wantsJson = (req.headers.accept || '').includes('application/json');
   if (wantsJson) {
-    return res.status(200).json({ token, docente: { id: docente.id, nome: docente.nome, email: docente.email } });
+    return res.status(200).json({ token, docente: { id: docente.id_docente, nome: docente.nome, email: docente.email } });
   }
 
   const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';

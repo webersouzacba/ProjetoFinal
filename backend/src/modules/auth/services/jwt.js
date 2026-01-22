@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 function signToken(docente) {
   const payload = {
-    sub: docente.id,
+    sub: docente.id_docente?.toString?.() ?? String(docente.id_docente),
     email: docente.email,
     nome: docente.nome
   };

@@ -4,6 +4,10 @@ async function listPublic({ status, orientadorId } = {}) {
   return repo.listPublic({ status, orientadorId });
 }
 
+// ✅ NOVO – detalhe público
+async function getPublic(propostaId) {
+  return repo.findById(propostaId);
+}
 
 async function listMine(idDocente) {
   return repo.listByOrientador(idDocente);
@@ -16,12 +20,13 @@ async function getMine(idDocente, propostaId) {
     err.statusCode = 404;
     throw err;
   }
-  // ownership: no schema real é id_orientador
+
   if (proposta.id_orientador !== BigInt(idDocente)) {
     const err = new Error('Acesso negado: proposta não pertence a este docente.');
     err.statusCode = 403;
     throw err;
   }
+
   return proposta;
 }
 
@@ -29,7 +34,7 @@ async function createMine(idDocente, dto) {
   return repo.create({
     id_orientador: idDocente,
     titulo: dto.titulo,
-    descricao: dto.descricao ?? dto.descricao_objetivos ?? null, // compat
+    descricao: dto.descricao ?? dto.descricao_objetivos ?? null,
     status: dto.status,
     coorientadoresIds: dto.coorientadores_ids,
     alunosIds: dto.alunos_ids,
@@ -56,4 +61,12 @@ async function deleteMine(idDocente, propostaId) {
   return repo.remove(propostaId);
 }
 
-module.exports = { listPublic,listMine, getMine, createMine, updateMine, deleteMine };
+module.exports = {
+  listPublic,
+  getPublic, // ✅ exportado
+  listMine,
+  getMine,
+  createMine,
+  updateMine,
+  deleteMine
+};
