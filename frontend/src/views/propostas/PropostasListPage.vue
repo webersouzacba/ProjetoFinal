@@ -10,12 +10,12 @@
     @reset="resetFilters"
   />
 
-  <PropostasTable :items="store.items" :loading="store.loading" :error="store.error" />
+<PropostasTable :items="store.items" :loading="store.loading" :error="store.error" />
 </template>
 
 <script setup>
 import { onMounted } from 'vue';
-import { usePropostasStore } from '../../../stores/propostasStore';
+import { usePropostasStore } from '../../stores/propostasStore';
 
 import PropostasFilters from './components/PropostasFilters.vue';
 import PropostasTable from './components/PropostasTable.vue';

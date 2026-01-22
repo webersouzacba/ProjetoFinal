@@ -36,7 +36,7 @@ function login() {
 }
 
 const tokenPreview = computed(() => {
-  const t = localStorage.getItem('access_token');
+  const t = localStorage.getItem('token');
   return t ? `${t.slice(0, 18)}...` : '(sem token)';
 });
 </script>

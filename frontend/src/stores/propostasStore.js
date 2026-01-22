@@ -21,7 +21,7 @@ export const usePropostasStore = defineStore('propostas', {
   }),
 
   getters: {
-    isAuthenticated: () => Boolean(localStorage.getItem('auth_token'))
+    isAuthenticated: () => Boolean(localStorage.getItem('token'))
   },
 
   actions: {
@@ -38,13 +38,21 @@ export const usePropostasStore = defineStore('propostas', {
       }
     },
 
-    async fetchPublicById(id) {
-      // Back-end atual não tem GET /api/propostas/:id (público).
-      // Estratégia POC: busca a lista e filtra localmente.
-      await this.fetchPublic();
-      this.current = this.items.find((p) => String(p.id_proposta) === String(id)) || null;
-      return this.current;
-    },
+  async fetchPublicDetail(id) {
+    this.loading = true;
+    this.error = null;
+    try {
+      const { data } = await api.get(`/api/propostas/${id}`);
+      this.current = data; // ✅ consistente
+      return data;
+    } catch (e) {
+      this.error = e?.response?.data?.error || e.message || 'Erro ao carregar proposta';
+      this.current = null;
+      return null;
+    } finally {
+      this.loading = false;
+    }
+  },
 
     async fetchMine() {
       this.loading = true;
