@@ -1,0 +1,74 @@
+// Tema Bootstrap 5 (SCSS)
+// Objetivo: aparência mais moderna/profissional com baixa complexidade.
+
+// 1) Tokens do tema (antes de importar Bootstrap)
+$primary: #1d4ed8; // azul "corporativo"
+$success: #16a34a;
+$warning: #f59e0b;
+$danger: #dc2626;
+$info: #0ea5e9;
+
+$body-bg: #f6f7fb;
+$body-color: #111827;
+
+$font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans",
+  "Liberation Sans", sans-serif;
+
+$border-radius: .8rem;
+$border-radius-sm: .6rem;
+$border-radius-lg: 1rem;
+
+$box-shadow: 0 .75rem 1.5rem rgba(17, 24, 39, .08);
+$box-shadow-sm: 0 .35rem .9rem rgba(17, 24, 39, .06);
+
+$card-border-color: rgba(17, 24, 39, .08);
+$input-border-color: rgba(17, 24, 39, .16);
+$input-focus-border-color: rgba($primary, .45);
+$input-focus-box-shadow: 0 0 0 .2rem rgba($primary, .15);
+
+// 2) Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// 3) Ajustes globais de acabamento
+html, body {
+  height: 100%;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: $body-bg;
+}
+
+.page {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+.card {
+  box-shadow: $box-shadow-sm;
+}
+
+.table > :not(caption) > * > * {
+  padding-top: .85rem;
+  padding-bottom: .85rem;
+}
+
+.form-hint {
+  font-size: .875rem;
+  color: $gray-600;
+}
+
+.badge-soft {
+  border: 1px solid rgba(17, 24, 39, .12);
+  background: rgba(255, 255, 255, .85);
+  color: $gray-800;
+}
+
+// Estado clicável em tabelas/listas
+.row-clickable {
+  cursor: pointer;
+}
+
+.row-clickable:hover {
+  background: rgba($primary, .04);
+}
