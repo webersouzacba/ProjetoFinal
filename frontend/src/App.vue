@@ -1,17 +1,14 @@
 <template>
-  <div class="min-vh-100 bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <RouterLink class="navbar-brand" to="/propostas">Projeto Final</RouterLink>
-
-        <div class="navbar-nav">
-          <RouterLink class="nav-link" to="/propostas">Propostas</RouterLink>
-        </div>
-      </div>
-    </nav>
-
-    <main class="container py-4">
+  <div class="app-shell">
+    <AppNavbar />
+    <main class="container page">
       <RouterView />
     </main>
+    <ToastHost />
   </div>
 </template>
+
+<script setup>
+import AppNavbar from './components/layout/AppNavbar.vue';
+import ToastHost from './components/ui/ToastHost.vue';
+</script>

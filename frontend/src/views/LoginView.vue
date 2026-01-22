@@ -1,6 +1,8 @@
 <template>
-  <div class="container py-4">
-    <h1 class="h4 mb-3">Login (Google OAuth 2.0)</h1>
+  <PageHeader title="Login" subtitle="Autenticação via Google OAuth 2.0 (delegada ao back-end)." />
+
+  <div class="card">
+    <div class="card-body">
 
     <div class="alert alert-info" role="alert">
       <div class="mb-2">
@@ -14,7 +16,7 @@
     </div>
 
     <button class="btn btn-danger" type="button" @click="login">
-      Entrar com Google
+      <i class="bi bi-google me-1" />Entrar com Google
     </button>
 
     <hr class="my-4" />
@@ -23,12 +25,14 @@
       Estado do token (apenas para POC):
     </p>
     <pre class="bg-light p-3 rounded border small mb-0">{{ tokenPreview }}</pre>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import { apiBaseUrl } from '../services/apiBase';
+import PageHeader from '../components/layout/PageHeader.vue';
 
 function login() {
   // abre o endpoint do back-end (não é XHR; é navegação)

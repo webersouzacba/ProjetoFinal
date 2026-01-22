@@ -1,25 +1,31 @@
 <template>
-  <section style="max-width: 720px; margin: 2rem auto; padding: 1rem;">
-    <h1>Autenticando...</h1>
+  <PageHeader title="Autenticando" subtitle="Concluindo login via Google OAuth 2.0." />
 
-    <p v-if="error" style="color:#b00020; margin-top: 0.75rem;">
-      {{ error }}
-    </p>
-
-    <p v-else style="margin-top: 0.75rem;">
-      Concluindo login, aguarde.
-    </p>
-  </section>
+  <div class="card">
+    <div class="card-body">
+      <div v-if="error" class="alert alert-danger mb-0">
+        {{ error }}
+      </div>
+      <div v-else class="d-flex align-items-center gap-2 text-muted">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+        Processando...
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useUiStore } from '../stores/ui';
+
+import PageHeader from '../components/layout/PageHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const ui = useUiStore();
 
 const error = ref('');
 
@@ -29,14 +35,12 @@ onMounted(async () => {
 
     if (!token || typeof token !== 'string') {
       error.value = 'Token não encontrado no retorno do login.';
-      setTimeout(() => router.replace({ name: 'login' }), 1200);
       return;
     }
 
-    // ✅ padronizado com apiClient e router guard
     auth.setToken(token);
+    ui.toast({ kind: 'success', message: 'Login realizado.' });
 
-    // redirect opcional (se veio do guard)
     const redirect = route.query.redirect;
     if (redirect && typeof redirect === 'string') {
       router.replace(redirect);
@@ -46,7 +50,7 @@ onMounted(async () => {
     router.replace({ name: 'propostas' });
   } catch (e) {
     error.value = 'Falha ao concluir autenticação.';
-    setTimeout(() => router.replace({ name: 'login' }), 1200);
+    ui.toast({ kind: 'danger', message: error.value, timeout: 5500 });
   }
 });
 </script>

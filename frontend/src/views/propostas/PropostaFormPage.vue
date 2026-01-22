@@ -1,33 +1,40 @@
 <template>
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">{{ isEdit ? 'Editar Proposta' : 'Nova Proposta' }}</h1>
-    <RouterLink class="btn btn-sm btn-outline-secondary" to="/propostas">Voltar</RouterLink>
-  </div>
+  <PageHeader
+    :title="isEdit ? 'Editar proposta' : 'Nova proposta'"
+    subtitle="Preencha os campos principais e associe coorientadores, alunos e palavras-chave."
+  >
+    <template #actions>
+      <RouterLink class="btn btn-outline-secondary" to="/propostas">
+        <i class="bi bi-arrow-left me-1" />Voltar
+      </RouterLink>
+    </template>
+  </PageHeader>
 
   <PropostaForm
     :mode="isEdit ? 'edit' : 'create'"
     :initial-values="initialValues"
+    :disabled="saving"
     @submit="handleSubmit"
     @cancel="goBack"
   />
-
-  <div v-if="toast" class="alert mt-3" :class="toast.kind === 'ok' ? 'alert-success' : 'alert-danger'">
-    {{ toast.message }}
-  </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePropostasStore } from '../../stores/propostasStore';
+import { useUiStore } from '../../stores/ui';
+
+import PageHeader from '../../components/layout/PageHeader.vue';
 import PropostaForm from './components/PropostaForm.vue';
 
 const props = defineProps({ id: { type: String, default: null } });
 
 const router = useRouter();
 const store = usePropostasStore();
+const ui = useUiStore();
 
-const toast = ref(null);
+const saving = ref(false);
 const isEdit = computed(() => !!props.id);
 
 const initialValues = ref({
@@ -43,16 +50,20 @@ onMounted(async () => {
   if (!isEdit.value) return;
 
   const p = await store.fetchPublicDetail(props.id);
-  if (p) {
-    initialValues.value = {
-      titulo: p.titulo || '',
-      descricao: p.descricao || '',
-      status: p.status || 'rascunho',
-      coorientadores_ids: (p.proposta_coorientadores || []).map((x) => String(x.id_docente)),
-      alunos_ids: (p.proposta_alunos || []).map((x) => String(x.id_aluno)),
-      palavras_chave: (p.proposta_palavras_chave || []).map((x) => x.palavra)
-    };
+  if (!p) {
+    ui.toast({ kind: 'warning', message: 'Proposta não encontrada.' });
+    router.push('/propostas');
+    return;
   }
+
+  initialValues.value = {
+    titulo: p.titulo || '',
+    descricao: p.descricao || '',
+    status: p.status || 'rascunho',
+    coorientadores_ids: (p.proposta_coorientadores || []).map((x) => String(x.id_docente)),
+    alunos_ids: (p.proposta_alunos || []).map((x) => String(x.id_aluno)),
+    palavras_chave: (p.proposta_palavras_chave || []).map((x) => x.palavra)
+  };
 });
 
 function goBack() {
@@ -60,21 +71,23 @@ function goBack() {
 }
 
 async function handleSubmit(payload) {
-  toast.value = null;
-
+  saving.value = true;
   try {
     if (isEdit.value) {
       await store.updateMine(props.id, payload);
-      toast.value = { kind: 'ok', message: 'Proposta atualizada.' };
+      ui.toast({ kind: 'success', message: 'Proposta atualizada com sucesso.' });
     } else {
       await store.createMine(payload);
-      toast.value = { kind: 'ok', message: 'Proposta criada.' };
+      ui.toast({ kind: 'success', message: 'Proposta criada com sucesso.' });
     }
 
     await store.fetchPublic();
     router.push('/propostas');
-  } catch (err) {
-    toast.value = { kind: 'err', message: err?.message || 'Falha ao salvar.' };
+  } catch (e) {
+    const msg = e?.response?.data?.error || e?.message || 'Falha ao salvar a proposta.';
+    ui.toast({ kind: 'danger', message: msg, timeout: 5500 });
+  } finally {
+    saving.value = false;
   }
 }
 </script>

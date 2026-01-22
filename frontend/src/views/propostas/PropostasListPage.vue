@@ -1,8 +1,11 @@
 <template>
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Propostas</h1>
-  <RouterLink class="btn btn-sm btn-success" to="/propostas/nova">Nova</RouterLink>
-  </div>
+  <PageHeader title="Propostas" subtitle="Lista pública com filtros por status e orientador.">
+    <template #actions>
+      <RouterLink class="btn btn-primary" to="/propostas/nova">
+        <i class="bi bi-plus-lg me-1" />Nova proposta
+      </RouterLink>
+    </template>
+  </PageHeader>
 
   <PropostasFilters
     :filtros="store.filtros"
@@ -10,7 +13,7 @@
     @reset="resetFilters"
   />
 
-<PropostasTable :items="store.items" :loading="store.loading" :error="store.error" />
+  <PropostasTable :items="store.items" :loading="store.loading" :error="store.error" />
 </template>
 
 <script setup>
@@ -19,6 +22,7 @@ import { usePropostasStore } from '../../stores/propostasStore';
 
 import PropostasFilters from './components/PropostasFilters.vue';
 import PropostasTable from './components/PropostasTable.vue';
+import PageHeader from '../../components/layout/PageHeader.vue';
 
 const store = usePropostasStore();
 

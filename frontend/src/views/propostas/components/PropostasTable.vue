@@ -1,20 +1,34 @@
 <template>
   <div class="card">
     <div class="card-body">
-      <div v-if="loading" class="text-muted">Carregando...</div>
+      <div v-if="loading" class="text-muted d-flex align-items-center gap-2">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+        Carregando...
+      </div>
 
       <div v-else-if="error" class="alert alert-danger" role="alert">
         {{ error }}
       </div>
 
       <div v-else>
-        <div v-if="!items?.length" class="text-muted">Nenhuma proposta encontrada.</div>
+        <EmptyState
+          v-if="!items?.length"
+          title="Nenhuma proposta encontrada"
+          subtitle="Ajuste os filtros ou crie uma nova proposta para começar."
+          icon="bi bi-search"
+        >
+          <template #actions>
+            <RouterLink class="btn btn-outline-primary" to="/propostas/nova">
+              <i class="bi bi-plus-lg me-1" />Nova proposta
+            </RouterLink>
+          </template>
+        </EmptyState>
 
         <div v-else class="table-responsive">
           <table class="table table-sm align-middle">
             <thead>
               <tr>
-                <th>ID</th>
+                <th class="text-muted">ID</th>
                 <th>Título</th>
                 <th>Status</th>
                 <th>Orientador</th>
@@ -22,14 +36,28 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="p in items" :key="p.id_proposta">
+              <tr
+                v-for="p in items"
+                :key="p.id_proposta"
+                class="row-clickable"
+                @click="goDetail(p.id_proposta)"
+              >
                 <td>{{ p.id_proposta }}</td>
-                <td>{{ p.titulo }}</td>
-                <td><span class="badge text-bg-secondary">{{ p.status }}</span></td>
+                <td>
+                  <div class="fw-semibold">{{ p.titulo }}</div>
+                  <div class="text-muted small" v-if="p.docentes?.email">
+                    {{ p.docentes.email }}
+                  </div>
+                </td>
+                <td><StatusBadge :value="p.status" /></td>
                 <td>{{ p.docentes?.nome || '-' }}</td>
                 <td class="text-end">
-                  <RouterLink class="btn btn-sm btn-outline-primary" :to="`/propostas/${p.id_proposta}`">
-                    Detalhes
+                  <RouterLink
+                    class="btn btn-sm btn-outline-primary"
+                    :to="`/propostas/${p.id_proposta}`"
+                    @click.stop
+                  >
+                    <i class="bi bi-eye me-1" />Detalhes
                   </RouterLink>
                 </td>
               </tr>
@@ -42,9 +70,19 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+import EmptyState from '../../../components/ui/EmptyState.vue';
+import StatusBadge from '../../../components/ui/StatusBadge.vue';
+
+const router = useRouter();
+
 defineProps({
   items: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' }
 });
+
+function goDetail(id) {
+  router.push(`/propostas/${id}`);
+}
 </script>
