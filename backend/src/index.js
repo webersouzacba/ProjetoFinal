@@ -2,7 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+
 const helmet = require('helmet');
+
+
 const morgan = require('morgan');
 const passport = require('passport');
 
@@ -19,7 +22,17 @@ const { palavrasChaveRoutes } = require('./modules/palavrasChave/routes/palavras
 const app = express();
 
 // Middlewares base
-app.use(helmet());
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet());
+} else {
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    })
+  );
+}
+
+
 app.use(cors({ origin: process.env.FRONTEND_URL || true, credentials: false }));
 app.use(express.json({ limit: '1mb' }));
 const swaggerUi = require('swagger-ui-express');

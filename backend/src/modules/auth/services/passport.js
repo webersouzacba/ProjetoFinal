@@ -24,10 +24,18 @@ function configurePassport() {
             return done(null, false, { message: 'Conta Google sem e-mail disponível.' });
           }
 
-          const docente = await prisma.docente.upsert({
+          const docenteExistente = await prisma.docente.findUnique({
+            where: { email }
+          });
+
+          if (!docenteExistente) {
+            // Política do projeto: somente docentes previamente registados podem autenticar
+            return done(null, false, { message: 'Acesso negado: docente não registado.' });
+          }
+
+          const docente = await prisma.docente.update({
             where: { email },
-            create: { nome, email, googleSub },
-            update: { nome, googleSub }
+            data: { nome, googleSub }
           });
 
           return done(null, docente);

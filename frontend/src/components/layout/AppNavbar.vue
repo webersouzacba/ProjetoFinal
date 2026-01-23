@@ -71,6 +71,8 @@ async function logout() {
     ui.toastSuccess('Sessão encerrada.');
     await router.push('/');
   } catch (e) {
+    // Se o logout já limpou o token mas houve falha em UI/navegação, não bloquear a saída.
+    console.error(e);
     ui.toastError('Não foi possível encerrar a sessão.');
   }
 }

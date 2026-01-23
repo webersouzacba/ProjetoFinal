@@ -10,12 +10,7 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     server: {
       proxy: {
-        // redireciona chamadas do SPA para o backend
         '/api': {
-          target,
-          changeOrigin: true
-        },
-        '/auth': {
           target,
           changeOrigin: true
         }

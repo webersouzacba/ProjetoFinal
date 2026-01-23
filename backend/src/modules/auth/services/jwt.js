@@ -4,7 +4,8 @@ function signToken(docente) {
   const payload = {
     sub: docente.id_docente?.toString?.() ?? String(docente.id_docente),
     email: docente.email,
-    nome: docente.nome
+    nome: docente.nome,
+    role: 'DOCENTE'
   };
 
   return jwt.sign(payload, process.env.JWT_SECRET, {

@@ -4,6 +4,10 @@
   <div class="card">
     <div class="card-body">
 
+    <div v-if="errorMsg" class="alert alert-warning" role="alert">
+      {{ errorMsg }}
+    </div>
+
     <div class="alert alert-info" role="alert">
       <div class="mb-2">
         Este projeto usa o fluxo OAuth2 do Google no <strong>back-end</strong>. Se as variáveis
@@ -31,14 +35,25 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { apiBaseUrl } from '../services/apiBase';
 import PageHeader from '../components/layout/PageHeader.vue';
+
+const route = useRoute();
 
 function login() {
   // abre o endpoint do back-end (não é XHR; é navegação)
   window.location.href = `${apiBaseUrl()}/auth/google`;
 }
 
+
+
+const errorMsg = computed(() => {
+  const e = String(route.query.error || '');
+  if (e === 'unauthorized') return 'A sua conta Google não está autorizada como docente neste sistema.';
+  if (e === 'auth_failed') return 'Falha ao autenticar com Google. Tente novamente.';
+  return '';
+});
 const tokenPreview = computed(() => {
   const t = localStorage.getItem('token');
   return t ? `${t.slice(0, 18)}...` : '(sem token)';

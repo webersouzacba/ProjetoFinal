@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || '',
-    user: JSON.parse(localStorage.getItem('user') || 'null') // opcional
+    user: JSON.parse(localStorage.getItem('user') || 'null')
   }),
 
   getters: {
@@ -28,6 +28,12 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+    },
+
+    // ✅ ADICIONE ISTO
+    async logout() {
+      // Não há sessão no backend (é JWT). Então basta limpar o client.
+      this.clearSession();
     }
   }
 });

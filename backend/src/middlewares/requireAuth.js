@@ -11,7 +11,8 @@ function requireAuth(req, res, next) {
     req.user = {
       id_docente: String(process.env.DEV_DOCENTE_ID ?? '1'),
       email: process.env.DEV_DOCENTE_EMAIL ?? 'dev.docente@local',
-      nome: process.env.DEV_DOCENTE_NOME ?? 'Docente DEV'
+      nome: process.env.DEV_DOCENTE_NOME ?? 'Docente DEV',
+      role: 'DOCENTE'
     };
     return next();
   }
@@ -29,8 +30,13 @@ function requireAuth(req, res, next) {
     req.user = {
       id_docente: payload.sub,
       email: payload.email,
-      nome: payload.nome
+      nome: payload.nome,
+      role: payload.role
     };
+
+    if (req.user.role !== 'DOCENTE') {
+      return res.status(403).json({ error: 'Acesso negado.' });
+    }
     return next();
   } catch (err) {
     return res.status(401).json({ error: 'Token expirado ou inválido.' });
