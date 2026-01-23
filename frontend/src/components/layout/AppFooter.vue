@@ -1,15 +1,11 @@
 <template>
   <footer class="app-footer border-top">
-    <div class="container py-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2">
-      <div class="small text-muted">
-        <strong class="text-body">Projeto Final — PWA (MEIW)</strong>
-        <span class="ms-1">• CRUD de Propostas</span>
-      </div>
-
-      <div class="small text-muted">
-        <span class="me-2">Versão POC</span>
-        <span class="d-none d-md-inline">•</span>
-        <span class="ms-md-2">Bootstrap 5 + Vue 3</span>
+    <div class="container py-3">
+      <div class="small text-muted lh-sm">
+        <div><strong class="text-body">Mestrado em Engenharia Informática e Tecnologias Web</strong></div>
+        <div>Unidade Curricular: Programação Web Avançada</div>
+        <div>Ano Letivo: 2025/2026</div>
+        <div>Aluno: Weber Marcelo Guirra de Souza – UTAD: al77734</div>
       </div>
     </div>
   </footer>

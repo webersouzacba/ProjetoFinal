@@ -83,3 +83,62 @@ body {
 .row-clickable:hover {
   background: rgba($primary, .04);
 }
+
+
+/* =========================
+   SPA Shell (Navbar + Sidebar + Content + Footer)
+   ========================= */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  min-height: 0; /* crucial for overflow */
+  display: flex;
+  overflow: hidden; /* prevents body scroll; scroll stays in main */
+}
+
+
+/* Navbar: reserva área do brand alinhada à sidebar (desktop) */
+.app-navbar-brand {
+  width: 280px; /* deve casar com .app-sidebar */
+  min-width: 280px;
+}
+
+@media (max-width: 991.98px) {
+  .app-navbar-brand {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+.app-sidebar {
+  width: 280px;
+  background: var(--bs-body-bg);
+  min-height: 0;
+  overflow: auto;
+}
+
+.app-sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  color: var(--bs-body-color);
+  border-radius: .75rem;
+}
+
+.app-sidebar-nav .nav-link.active {
+  background: rgba(var(--bs-primary-rgb), .12);
+  color: var(--bs-primary);
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+}
+
+/* Footer stays visible because only .app-main scrolls */
