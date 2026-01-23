@@ -11,6 +11,12 @@ $info: #0ea5e9;
 $body-bg: #f6f7fb;
 $body-color: #111827;
 
+/* Superfícies do shell (sidebar/footer) */
+$app-rail-bg: rgba($primary, .06);         // leve “tinta” do azul
+$app-rail-border: rgba(17, 24, 39, .10);   // borda discreta
+
+
+
 $font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans",
   "Liberation Sans", sans-serif;
 
@@ -117,22 +123,65 @@ body {
 
 .app-sidebar {
   width: 280px;
-  background: var(--bs-body-bg);
   min-height: 0;
   overflow: auto;
+
+  /* “Rail” com identidade visual, sem pesar */
+  background: $app-rail-bg;
+  border-right: 1px solid $app-rail-border;
+
+  /* melhora percepção de camada */
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .6);
 }
 
 .app-sidebar-nav .nav-link {
   display: flex;
   align-items: center;
   gap: .25rem;
-  color: var(--bs-body-color);
+
+  color: rgba(17, 24, 39, .86);
   border-radius: .75rem;
+
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.app-sidebar-nav .nav-link:hover {
+  background: rgba(var(--bs-primary-rgb), .08);
+  color: var(--bs-primary);
+}
+
+.app-sidebar-nav .nav-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 .2rem rgba(var(--bs-primary-rgb), .20);
 }
 
 .app-sidebar-nav .nav-link.active {
-  background: rgba(var(--bs-primary-rgb), .12);
+  background: rgba(var(--bs-primary-rgb), .14);
   color: var(--bs-primary);
+  font-weight: 600;
+}
+
+
+/* Footer stays visible because only .app-main scrolls */
+
+.app-footer {
+  background: $app-rail-bg;
+  border-top: 1px solid $app-rail-border;
+  color: rgba(17, 24, 39, .72);
+}
+
+.app-footer a {
+  color: rgba(17, 24, 39, .72);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  color: var(--bs-primary);
+  text-decoration: underline;
+}
+
+.app-navbar {
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .app-main {
@@ -141,4 +190,3 @@ body {
   overflow: auto;
 }
 
-/* Footer stays visible because only .app-main scrolls */

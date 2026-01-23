@@ -1,11 +1,16 @@
 <template>
-  <PageHeader title="Propostas" subtitle="Lista pública com filtros por status e orientador.">
-    <template #actions>
-      <RouterLink class="btn btn-primary" to="/propostas/nova">
-        <i class="bi bi-plus-lg me-1" />Nova proposta
-      </RouterLink>
-    </template>
-  </PageHeader>
+<PageHeader title="Propostas" subtitle="Lista pública com filtros por status e orientador.">
+  <template #actions>
+    <RouterLink class="btn btn-outline-secondary" to="/">
+      <i class="bi bi-arrow-left me-1" />Voltar
+    </RouterLink>
+
+    <RouterLink class="btn btn-primary" to="/propostas/nova">
+      <i class="bi bi-plus-lg me-1" />Nova proposta
+    </RouterLink>
+  </template>
+</PageHeader>
+
 
   <PropostasFilters
     :filtros="store.filtros"

@@ -1,5 +1,5 @@
 <template>
-  <nav class="app-sidebar-nav">
+  <nav class="app-sidebar app-sidebar-nav">
     <div class="px-3 pt-3 pb-2 text-uppercase small text-muted fw-semibold">Navegação</div>
 
     <ul class="nav nav-pills flex-column gap-1 px-2 pb-3">
