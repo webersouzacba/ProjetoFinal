@@ -184,4 +184,31 @@ async function remove(id_proposta) {
   return prisma.proposta.delete({ where: { id_proposta: pid } });
 }
 
-module.exports = { listPublic, listByOrientador, findById, create, update, remove };
+async function getIndicadores() {
+  const [total, publicadas, rascunho, orientadoresGroup] = await Promise.all([
+    prisma.proposta.count(),
+    prisma.proposta.count({ where: { status: 'publicada' } }),
+    prisma.proposta.count({ where: { status: 'rascunho' } }),
+    prisma.proposta.groupBy({
+      by: ['id_orientador'],
+      _count: { id_orientador: true },
+    }),
+  ])
+
+  const orientadores = Array.isArray(orientadoresGroup) ? orientadoresGroup.length : 0
+
+  return { total, publicadas, rascunho, orientadores }
+}
+
+/*async function getIndicadores() {
+  return {
+    total: 123,
+    publicadas: 45,
+    rascunho: 67,
+    orientadores: 8,
+    _debug: 'ok-repository',
+  }
+}*/
+
+
+module.exports = { listPublic, listByOrientador, findById, create, update, remove, getIndicadores };

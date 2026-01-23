@@ -116,6 +116,16 @@ async function deleteMine(req, res, next) {
   }
 }
 
+async function getIndicadores(req, res, next) {
+  try {
+    const stats = await service.getIndicadores();
+    return res.json(toJsonSafe(stats));
+    return 'ok';
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   listPublic,
   getPublic,
@@ -123,5 +133,7 @@ module.exports = {
   getMine,
   createMine,
   updateMine,
-  deleteMine
+  deleteMine,
+  getIndicadores
 };
+

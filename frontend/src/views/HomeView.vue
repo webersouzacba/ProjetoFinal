@@ -206,36 +206,32 @@ function fmt(v) {
 
 onMounted(async () => {
   const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9002').replace(/\/$/, '')
-  const url = `${base}/propostas/public`
+  const url = `${base}/api/propostas/indicadores`
+
+  statsError.value = false
 
   try {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
 
-    const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : [])
-    const total = items.length
-
-    const publicadas = items.filter(p => String(p.status || '').toLowerCase() === 'publicada').length
-    const rascunho = items.filter(p => String(p.status || '').toLowerCase() === 'rascunho').length
-
-    const orientadoresSet = new Set(
-      items
-        .map(p => p.orientador_id ?? p.orientadorId ?? p.orientador?.id)
-        .filter(v => v !== null && v !== undefined)
-        .map(v => String(v))
-    )
-
     stats.value = {
-      total,
-      publicadas,
-      rascunho,
-      orientadores: orientadoresSet.size || null,
+      total: data.total ?? null,
+      publicadas: data.publicadas ?? null,
+      rascunho: data.rascunho ?? null,
+      orientadores: data.orientadores ?? null,
     }
   } catch (e) {
     statsError.value = true
+    stats.value = {
+      total: null,
+      publicadas: null,
+      rascunho: null,
+      orientadores: null,
+    }
   }
 })
+
 </script>
 
 <style scoped>

@@ -1,8 +1,14 @@
-const express = require('express');
-const controller = require('../controllers/propostaController');
-const { requireAuth } = require('../../../middlewares/requireAuth');
+const express = require('express')
+const controller = require('../controllers/propostaController')
+const { requireAuth } = require('../../../middlewares/requireAuth')
 
-const router = express.Router();
+const router = express.Router()
+
+/**
+ * Endpoint dedicado de indicadores (PÚBLICO)
+ * IMPORTANTE: precisa vir antes de '/:id'
+ */
+router.get('/indicadores', controller.getIndicadores)
 
 /**
  * @openapi
@@ -22,30 +28,7 @@ const router = express.Router();
  *       200:
  *         description: Lista de propostas públicas
  */
-router.get('/', controller.listPublic);
-
-/**
- * @openapi
- * /api/propostas/{id}:
- *   get:
- *     summary: Detalhar proposta pública
- *     description: Retorna os detalhes de uma proposta pública pelo ID.
- *     tags:
- *       - Propostas
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da proposta
- *     responses:
- *       200:
- *         description: Proposta encontrada
- *       404:
- *         description: Proposta não encontrada
- */
-router.get('/:id', controller.getPublic);
+router.get('/', controller.listPublic)
 
 /**
  * @openapi
@@ -60,7 +43,7 @@ router.get('/:id', controller.getPublic);
  *       200:
  *         description: Lista de propostas do docente
  */
-router.get('/mine', requireAuth, controller.listMine);
+router.get('/mine', requireAuth, controller.listMine)
 
 /**
  * @openapi
@@ -83,7 +66,7 @@ router.get('/mine', requireAuth, controller.listMine);
  *       404:
  *         description: Proposta não encontrada
  */
-router.get('/mine/:id', requireAuth, controller.getMine);
+router.get('/mine/:id', requireAuth, controller.getMine)
 
 /**
  * @openapi
@@ -94,76 +77,21 @@ router.get('/mine/:id', requireAuth, controller.getMine);
  *       - bearerAuth: []
  *     tags:
  *       - Propostas
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - titulo
- *               - descricao_objetivos
- *             properties:
- *               titulo:
- *                 type: string
- *               descricao_objetivos:
- *                 type: string
- *               status:
- *                 type: string
- *     responses:
- *       201:
- *         description: Proposta criada com sucesso
  */
-router.post('/mine', requireAuth, controller.createMine);
+router.post('/mine', requireAuth, controller.createMine)
+
+router.put('/mine/:id', requireAuth, controller.updateMine)
+router.delete('/mine/:id', requireAuth, controller.deleteMine)
 
 /**
  * @openapi
- * /api/propostas/mine/{id}:
- *   put:
- *     summary: Atualizar proposta existente
- *     security:
- *       - bearerAuth: []
+ * /api/propostas/{id}:
+ *   get:
+ *     summary: Detalhar proposta pública
+ *     description: Retorna os detalhes de uma proposta pública pelo ID.
  *     tags:
  *       - Propostas
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       200:
- *         description: Proposta atualizada
- *       404:
- *         description: Proposta não encontrada
  */
-router.put('/mine/:id', requireAuth, controller.updateMine);
+router.get('/:id', controller.getPublic)
 
-/**
- * @openapi
- * /api/propostas/mine/{id}:
- *   delete:
- *     summary: Remover proposta
- *     security:
- *       - bearerAuth: []
- *     tags:
- *       - Propostas
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       204:
- *         description: Proposta removida com sucesso
- */
-router.delete('/mine/:id', requireAuth, controller.deleteMine);
-
-module.exports = { propostaRoutes: router };
+module.exports = { propostaRoutes: router }

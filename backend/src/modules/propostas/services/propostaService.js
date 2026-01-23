@@ -61,6 +61,10 @@ async function deleteMine(idDocente, propostaId) {
   return repo.remove(propostaId);
 }
 
+async function getIndicadores() {
+  return repo.getIndicadores()
+}
+
 module.exports = {
   listPublic,
   getPublic, // ✅ exportado
@@ -68,5 +72,6 @@ module.exports = {
   getMine,
   createMine,
   updateMine,
-  deleteMine
+  deleteMine,
+  getIndicadores
 };
