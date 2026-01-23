@@ -1,14 +1,7 @@
 <template>
-  <div class="app-shell">
-    <AppNavbar />
-    <main class="container page">
-      <RouterView />
-    </main>
-    <ToastHost />
-  </div>
+  <RouterView />
 </template>
 
 <script setup>
-import AppNavbar from './components/layout/AppNavbar.vue';
-import ToastHost from './components/ui/ToastHost.vue';
+import { RouterView } from 'vue-router';
 </script>

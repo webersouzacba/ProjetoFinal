@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
     <div class="container">
       <RouterLink class="navbar-brand fw-semibold" to="/propostas">
         <i class="bi bi-kanban me-2" />Projeto Final
