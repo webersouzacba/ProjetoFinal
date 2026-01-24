@@ -24,21 +24,20 @@ function configurePassport() {
             return done(null, false, { message: 'Conta Google sem e-mail disponível.' });
           }
 
-          const docenteExistente = await prisma.docente.findUnique({
-            where: { email }
-          });
-
-          if (!docenteExistente) {
-            // Política do projeto: somente docentes previamente registados podem autenticar
-            return done(null, false, { message: 'Acesso negado: docente não registado.' });
+          // Política do projeto: SEM autoprovisionamento.
+          // Apenas docentes previamente cadastrados podem autenticar.
+          const docente = await prisma.docente.findUnique({ where: { email } })
+          if (!docente) {
+            return done(null, false, { message: 'UNAUTHORIZED' })
           }
 
-          const docente = await prisma.docente.update({
+          // Atualiza apenas atributos de vínculo com o Google (sem criar novos docentes)
+          const updated = await prisma.docente.update({
             where: { email },
             data: { nome, googleSub }
-          });
+          })
 
-          return done(null, docente);
+          return done(null, updated);
         } catch (err) {
           return done(err);
         }

@@ -5,8 +5,20 @@
       <i class="bi bi-arrow-left me-1" />Voltar
     </RouterLink>
 
-    <RouterLink class="btn btn-primary" to="/propostas/nova">
+    <RouterLink
+      v-if="canManage"
+      class="btn btn-primary"
+      to="/propostas/nova"
+    >
       <i class="bi bi-plus-lg me-1" />Nova proposta
+    </RouterLink>
+
+    <RouterLink
+      v-else
+      class="btn btn-outline-primary"
+      :to="{ name: 'login', query: { redirect: '/propostas/nova' } }"
+    >
+      <i class="bi bi-box-arrow-in-right me-1" />Entrar para criar
     </RouterLink>
   </template>
 </PageHeader>
@@ -22,14 +34,18 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { usePropostasStore } from '../../stores/propostasStore';
+import { useAuthStore } from '../../stores/auth'
 
 import PropostasFilters from './components/PropostasFilters.vue';
 import PropostasTable from './components/PropostasTable.vue';
 import PageHeader from '../../components/layout/PageHeader.vue';
 
 const store = usePropostasStore();
+const auth = useAuthStore()
+
+const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 
 onMounted(() => {
   store.fetchPublic();

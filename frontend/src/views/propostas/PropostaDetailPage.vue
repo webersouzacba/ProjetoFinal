@@ -6,7 +6,7 @@
       </RouterLink>
 
       <RouterLink
-        v-if="proposta"
+        v-if="canEdit"
         class="btn btn-primary"
         :to="`/propostas/${proposta.id_proposta}/editar`"
       >
@@ -105,8 +105,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { usePropostasStore } from '../../stores/propostasStore';
+import { useAuthStore } from '../../stores/auth'
 
 import PageHeader from '../../components/layout/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
@@ -114,8 +115,18 @@ import StatusBadge from '../../components/ui/StatusBadge.vue';
 const props = defineProps({ id: { type: String, required: true } });
 
 const store = usePropostasStore();
+const auth = useAuthStore()
 const proposta = ref(null);
 const loading = ref(false);
+
+const canEdit = computed(() => {
+  if (!auth.isAuthenticated) return false
+  if (auth.user?.role !== 'DOCENTE') return false
+  if (!proposta.value) return false
+  // Autorização contextual: só o orientador da proposta pode editar.
+  const emailOrientador = proposta.value?.docentes?.email
+  return Boolean(emailOrientador && auth.user?.email && emailOrientador === auth.user.email)
+})
 
 onMounted(async () => {
   loading.value = true;

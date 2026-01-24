@@ -52,7 +52,7 @@ const router = createRouter({
   routes
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth) return true;
 
   // ✅ DEV sem autenticação
@@ -61,9 +61,22 @@ router.beforeEach((to) => {
 
   // ✅ Entrega com autenticação
   const auth = useAuthStore();
-  if (auth?.token) return true;
+  if (!auth?.token) {
+    return { name: 'login', query: { redirect: to.fullPath } };
+  }
 
-  return { name: 'login', query: { redirect: to.fullPath } };
+  // Garante que o perfil (role) esteja carregado para aplicar RBAC no SPA
+  if (!auth.user) {
+    try {
+      await auth.fetchMe()
+    } catch (e) {
+      // token inválido/expirado
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
+  }
+
+  if (auth.user?.role === 'DOCENTE') return true
+  return { name: 'login', query: { error: 'unauthorized' } }
 });
 
 export default router;

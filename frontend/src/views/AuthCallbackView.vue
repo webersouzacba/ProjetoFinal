@@ -39,10 +39,16 @@ onMounted(async () => {
     }
 
     auth.setToken(token);
+    // Carrega o perfil do utilizador (Opção A)
+    await auth.fetchMe()
     ui.toast({ kind: 'success', message: 'Login realizado.' });
 
-    const redirect = route.query.redirect;
+    const redirectFromQuery = route.query.redirect;
+    const redirectFromStorage = localStorage.getItem('postLoginRedirect')
+    const redirect = (typeof redirectFromQuery === 'string' && redirectFromQuery) || redirectFromStorage
+
     if (redirect && typeof redirect === 'string') {
+      localStorage.removeItem('postLoginRedirect')
       router.replace(redirect);
       return;
     }

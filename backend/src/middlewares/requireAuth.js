@@ -31,11 +31,12 @@ function requireAuth(req, res, next) {
       id_docente: payload.sub,
       email: payload.email,
       nome: payload.nome,
-      role: payload.role
+      role: payload.role || 'DOCENTE'
     };
 
+    // RBAC: apenas DOCENTE acessa rotas protegidas (/mine, etc.)
     if (req.user.role !== 'DOCENTE') {
-      return res.status(403).json({ error: 'Acesso negado.' });
+      return res.status(403).json({ error: 'Acesso restrito a docentes.' });
     }
     return next();
   } catch (err) {

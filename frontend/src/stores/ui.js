@@ -17,16 +17,17 @@ export const useUiStore = defineStore('ui', {
       }
     },
 
-    toastSuccess(message, timeout) {
-      this.toast({ kind: 'success', message, timeout });
+    toastSuccess(message, timeout = 3500) {
+      this.toast({ kind: 'success', message, timeout })
     },
 
-    toastError(message, timeout) {
-      this.toast({ kind: 'danger', message, timeout });
+    toastError(message, timeout = 4500) {
+      this.toast({ kind: 'danger', message, timeout })
     },
 
     dismissToast(id) {
       this.toasts = this.toasts.filter((t) => t.id !== id);
     }
+    
   }
 });

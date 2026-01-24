@@ -15,7 +15,7 @@
         </RouterLink>
       </li>
 
-      <li class="nav-item" v-if="auth.isAuthenticated">
+      <li class="nav-item" v-if="canManage">
         <RouterLink class="nav-link" to="/propostas/nova">
           <i class="bi bi-plus-circle me-2" />Nova proposta
         </RouterLink>
@@ -39,6 +39,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useAuthStore } from '../../stores/auth';
 const auth = useAuthStore();
+
+const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 </script>

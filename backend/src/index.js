@@ -11,6 +11,7 @@ const passport = require('passport');
 
 const { configurePassport } = require('./modules/auth/services/passport');
 const { authRoutes } = require('./modules/auth/routes/authRoutes');
+const { apiAuthRoutes } = require('./modules/auth/routes/apiAuthRoutes')
 const { docenteRoutes } = require('./modules/docentes/routes/docenteRoutes');
 const { propostaRoutes } = require('./modules/propostas/routes/propostaRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -74,6 +75,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Rotas
 app.use('/auth', authRoutes);
+app.use('/api/auth', apiAuthRoutes)
 app.use('/api/docentes', docenteRoutes);
 app.use('/api/propostas', propostaRoutes);
 app.use('/api/alunos', alunoRoutes);

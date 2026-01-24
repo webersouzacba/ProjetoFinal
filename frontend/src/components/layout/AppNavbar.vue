@@ -62,7 +62,7 @@ const ui = useUiStore();
 const displayName = computed(() => {
   const u = auth.user;
   if (!u) return '';
-  return u.name || u.email || `Usuário #${u.id}`;
+  return u.nome || u.name || u.email || `Usuário #${u.id || u.id_docente || ''}`;
 });
 
 async function logout() {
@@ -71,7 +71,7 @@ async function logout() {
     ui.toastSuccess('Sessão encerrada.');
     await router.push('/');
   } catch (e) {
-    // Se o logout já limpou o token mas houve falha em UI/navegação, não bloquear a saída.
+    // Mesmo que o logout tenha limpado a sessão, evitamos erro “fantasma” por falhas de UI.
     console.error(e);
     ui.toastError('Não foi possível encerrar a sessão.');
   }

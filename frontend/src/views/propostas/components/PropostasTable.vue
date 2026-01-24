@@ -14,12 +14,23 @@
         <EmptyState
           v-if="!items?.length"
           title="Nenhuma proposta encontrada"
-          subtitle="Ajuste os filtros ou crie uma nova proposta para começar."
+          subtitle="Ajuste os filtros para refinar a consulta."
           icon="bi bi-search"
         >
           <template #actions>
-            <RouterLink class="btn btn-outline-primary" to="/propostas/nova">
+            <RouterLink
+              v-if="canManage"
+              class="btn btn-outline-primary"
+              to="/propostas/nova"
+            >
               <i class="bi bi-plus-lg me-1" />Nova proposta
+            </RouterLink>
+            <RouterLink
+              v-else
+              class="btn btn-outline-primary"
+              :to="{ name: 'login', query: { redirect: '/propostas/nova' } }"
+            >
+              <i class="bi bi-box-arrow-in-right me-1" />Entrar para criar
             </RouterLink>
           </template>
         </EmptyState>
@@ -70,11 +81,16 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../../stores/auth'
 import EmptyState from '../../../components/ui/EmptyState.vue';
 import StatusBadge from '../../../components/ui/StatusBadge.vue';
 
 const router = useRouter();
+const auth = useAuthStore()
+
+const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 
 defineProps({
   items: { type: Array, default: () => [] },

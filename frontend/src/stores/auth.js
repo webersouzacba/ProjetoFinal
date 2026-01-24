@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { api } from '../services/apiClient'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -7,7 +8,8 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (s) => Boolean(s.token)
+    isAuthenticated: (s) => Boolean(s.token),
+    isDocente: (s) => Boolean(s.token) && s.user?.role === 'DOCENTE'
   },
 
   actions: {
@@ -28,6 +30,26 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+    },
+
+    async fetchMe() {
+      // Se não há token, não há o que buscar
+      if (!this.token) {
+        this.user = null
+        localStorage.removeItem('user')
+        return null
+      }
+
+      try {
+        const { data } = await api.get('/api/auth/me')
+        this.user = data
+        localStorage.setItem('user', JSON.stringify(this.user))
+        return data
+      } catch (err) {
+        // Token inválido/expirado ou sem permissão -> limpa sessão
+        this.clearSession()
+        throw err
+      }
     },
 
     // ✅ ADICIONE ISTO
