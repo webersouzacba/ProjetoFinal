@@ -120,7 +120,6 @@ async function getIndicadores(req, res, next) {
   try {
     const stats = await service.getIndicadores();
     return res.json(toJsonSafe(stats));
-    return 'ok';
   } catch (err) {
     return next(err);
   }

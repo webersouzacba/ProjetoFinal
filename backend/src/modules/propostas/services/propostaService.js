@@ -30,15 +30,27 @@ async function getMine(idDocente, propostaId) {
   return proposta;
 }
 
+// Padronização: "descricao" é o campo oficial.
+// Compatibilidade: aceita "descricao_objetivos" como fallback.
+function resolveDescricao(dto) {
+  const desc = dto?.descricao;
+  if (typeof desc === 'string') return desc;
+
+  const legacy = dto?.descricao_objetivos;
+  if (typeof legacy === 'string') return legacy;
+
+  return null;
+}
+
 async function createMine(idDocente, dto) {
   return repo.create({
     id_orientador: idDocente,
     titulo: dto.titulo,
-    descricao: dto.descricao ?? dto.descricao_objetivos ?? null,
+    descricao: resolveDescricao(dto),
     status: dto.status,
     coorientadoresIds: dto.coorientadores_ids,
     alunosIds: dto.alunos_ids,
-    palavrasChave: dto.palavras_chave
+    palavrasChave: dto.palavras_chave,
   });
 }
 
@@ -48,11 +60,11 @@ async function updateMine(idDocente, propostaId, dto) {
   return repo.update({
     id_proposta: propostaId,
     titulo: dto.titulo,
-    descricao: dto.descricao ?? dto.descricao_objetivos,
+    descricao: resolveDescricao(dto),
     status: dto.status,
     coorientadoresIds: dto.coorientadores_ids,
     alunosIds: dto.alunos_ids,
-    palavrasChave: dto.palavras_chave
+    palavrasChave: dto.palavras_chave,
   });
 }
 
@@ -62,7 +74,7 @@ async function deleteMine(idDocente, propostaId) {
 }
 
 async function getIndicadores() {
-  return repo.getIndicadores()
+  return repo.getIndicadores();
 }
 
 module.exports = {
@@ -73,5 +85,5 @@ module.exports = {
   createMine,
   updateMine,
   deleteMine,
-  getIndicadores
+  getIndicadores,
 };

@@ -10,6 +10,10 @@ import PropostasListPage from '../views/propostas/PropostasListPage.vue';
 import PropostaDetailPage from '../views/propostas/PropostaDetailPage.vue';
 import PropostaFormPage from '../views/propostas/PropostaFormPage.vue';
 
+// ✅ NOVO: Docentes (público)
+import DocentesListPage from '../views/docentes/DocentesListPage.vue';
+import DocenteDetailPage from '../views/docentes/DocenteDetailPage.vue';
+
 import { useAuthStore } from '../stores/auth';
 
 // Rotas focadas na entidade Proposta (POC - Atividade 5.1)
@@ -23,6 +27,10 @@ const routes = [
 
       // Callback do OAuth (backend redireciona para cá com ?token=...)
       { path: 'auth/callback', name: 'auth-callback', component: AuthCallbackView },
+
+      // ✅ Docentes (público)
+      { path: 'docentes', name: 'docentes', component: DocentesListPage },
+      { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 
       // Público (listagem + detalhe)
       { path: 'propostas', name: 'propostas', component: PropostasListPage },
@@ -68,15 +76,15 @@ router.beforeEach(async (to) => {
   // Garante que o perfil (role) esteja carregado para aplicar RBAC no SPA
   if (!auth.user) {
     try {
-      await auth.fetchMe()
+      await auth.fetchMe();
     } catch (e) {
       // token inválido/expirado
-      return { name: 'login', query: { redirect: to.fullPath } }
+      return { name: 'login', query: { redirect: to.fullPath } };
     }
   }
 
-  if (auth.user?.role === 'DOCENTE') return true
-  return { name: 'login', query: { error: 'unauthorized' } }
+  if (auth.user?.role === 'DOCENTE') return true;
+  return { name: 'login', query: { error: 'unauthorized' } };
 });
 
 export default router;

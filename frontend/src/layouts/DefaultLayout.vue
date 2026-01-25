@@ -46,3 +46,41 @@ import AppFooter from '../components/layout/AppFooter.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
 import ToastHost from '../components/ui/ToastHost.vue';
 </script>
+
+<style scoped>
+/* 1) O shell vira o "viewport container" */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* evita scroll duplicado no body/shell */
+}
+
+/* 2) app-body ocupa o espaço entre navbar e footer */
+.app-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0; /* crucial para flex + overflow funcionar corretamente */
+}
+
+/* 3) Sidebar desktop ocupa altura do app-body */
+.app-sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden; /* sidebar não deve ter scrollbar própria */
+}
+
+/* 4) Main é o ÚNICO local com rolagem vertical */
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Opcional: se o container interno estiver estourando largura/altura */
+.app-main > .container {
+  max-width: 1200px;
+}
+</style>

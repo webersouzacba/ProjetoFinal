@@ -14,3 +14,17 @@ export function normalizeApiError(err) {
     'Erro inesperado.';
   return { status, message };
 }
+
+// -------------------------
+// Docentes (público)
+// -------------------------
+
+export async function getDocentes() {
+  const { data } = await api.get('/api/docentes');
+  return data;
+}
+
+export async function getDocenteById(id) {
+  const { data } = await api.get(`/api/docentes/${id}`);
+  return data;
+}

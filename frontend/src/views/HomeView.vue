@@ -26,7 +26,7 @@
 
               <RouterLink
                 v-if="isAuthenticated"
-                to="/propostas/new"
+                to="/propostas/nova"
                 class="btn btn-outline-primary"
               >
                 <i class="bi bi-plus-circle me-2"></i>
