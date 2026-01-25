@@ -1,4 +1,5 @@
 <template>
+
   <PageHeader title="Detalhes da proposta" subtitle="Visualização completa (pública) da proposta selecionada.">
     <template #actions>
       <RouterLink class="btn btn-outline-secondary" to="/propostas">
@@ -103,6 +104,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
