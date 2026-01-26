@@ -21,4 +21,32 @@ async function getById(id) {
   });
 }
 
-module.exports = { list, getById };
+async function create(data) {
+  return prisma.aluno.create({
+    data: {
+      nome: data.nome,
+      email: data.email ?? null
+    },
+    select: { id_aluno: true, nome: true, email: true }
+  });
+}
+
+async function update(id, data) {
+  const patch = {};
+  if (data.nome !== undefined) patch.nome = data.nome;
+  if (data.email !== undefined) patch.email = data.email;
+
+  return prisma.aluno.update({
+    where: { id_aluno: asBigInt(id) },
+    data: patch,
+    select: { id_aluno: true, nome: true, email: true }
+  });
+}
+
+async function remove(id) {
+  return prisma.aluno.delete({
+    where: { id_aluno: asBigInt(id) }
+  });
+}
+
+module.exports = { list, getById, create, update, remove };

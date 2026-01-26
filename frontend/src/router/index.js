@@ -10,13 +10,16 @@ import PropostasListPage from '../views/propostas/PropostasListPage.vue';
 import PropostaDetailPage from '../views/propostas/PropostaDetailPage.vue';
 import PropostaFormPage from '../views/propostas/PropostaFormPage.vue';
 
-// ✅ NOVO: Docentes (público)
 import DocentesListPage from '../views/docentes/DocentesListPage.vue';
 import DocenteDetailPage from '../views/docentes/DocenteDetailPage.vue';
+import DocenteFormPage from '../views/docentes/DocenteFormPage.vue';
+
+import AlunosListPage from '../views/alunos/AlunosListPage.vue';
+import AlunoDetailPage from '../views/alunos/AlunoDetailPage.vue';
+import AlunoFormPage from '../views/alunos/AlunoFormPage.vue';
 
 import { useAuthStore } from '../stores/auth';
 
-// Rotas focadas na entidade Proposta (POC - Atividade 5.1)
 const routes = [
   {
     path: '/',
@@ -24,33 +27,25 @@ const routes = [
     children: [
       { path: '', name: 'home', component: HomeView },
       { path: 'login', name: 'login', component: LoginView },
-
-      // Callback do OAuth (backend redireciona para cá com ?token=...)
       { path: 'auth/callback', name: 'auth-callback', component: AuthCallbackView },
 
-      // ✅ Docentes (público)
+      // Docentes
       { path: 'docentes', name: 'docentes', component: DocentesListPage },
+      { path: 'docentes/novo', name: 'docente-new', component: DocenteFormPage, props: { mode: 'create' }, meta: { requiresAuth: true } },
+      { path: 'docentes/:id/editar', name: 'docente-edit', component: DocenteFormPage, props: r => ({ mode: 'edit', id: r.params.id }), meta: { requiresAuth: true } },
       { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 
-      // Público (listagem + detalhe)
-      { path: 'propostas', name: 'propostas', component: PropostasListPage },
-      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true },
+      // Alunos
+      { path: 'alunos', name: 'alunos', component: AlunosListPage, meta: { requiresAuth: true } },
+      { path: 'alunos/novo', name: 'aluno-new', component: AlunoFormPage, props: { mode: 'create' }, meta: { requiresAuth: true } },
+      { path: 'alunos/:id/editar', name: 'aluno-edit', component: AlunoFormPage, props: r => ({ mode: 'edit', id: r.params.id }), meta: { requiresAuth: true } },
+      { path: 'alunos/:id', name: 'aluno-detail', component: AlunoDetailPage, props: true, meta: { requiresAuth: true } },
 
-      // Área "minhas propostas" (criar/editar) — exige OAuth/JWT quando ativado
-      {
-        path: 'propostas/nova',
-        name: 'proposta-new',
-        component: PropostaFormPage,
-        props: { mode: 'create' },
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'propostas/:id/editar',
-        name: 'proposta-edit',
-        component: PropostaFormPage,
-        props: (r) => ({ mode: 'edit', id: r.params.id }),
-        meta: { requiresAuth: true }
-      }
+      // Propostas
+      { path: 'propostas', name: 'propostas', component: PropostasListPage },
+      { path: 'propostas/nova', name: 'proposta-new', component: PropostaFormPage, props: { mode: 'create' }, meta: { requiresAuth: true } },
+      { path: 'propostas/:id/editar', name: 'proposta-edit', component: PropostaFormPage, props: r => ({ mode: 'edit', id: r.params.id }), meta: { requiresAuth: true } },
+      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true }
     ]
   }
 ];
@@ -63,28 +58,20 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth) return true;
 
-  // ✅ DEV sem autenticação
-  const authEnabled = String(import.meta.env.VITE_AUTH_ENABLED ?? 'true').toLowerCase() !== 'false';
-  if (!authEnabled) return true;
-
-  // ✅ Entrega com autenticação
   const auth = useAuthStore();
-  if (!auth?.token) {
+  if (!auth.token) {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 
-  // Garante que o perfil (role) esteja carregado para aplicar RBAC no SPA
   if (!auth.user) {
     try {
       await auth.fetchMe();
-    } catch (e) {
-      // token inválido/expirado
-      return { name: 'login', query: { redirect: to.fullPath } };
+    } catch {
+      return { name: 'login' };
     }
   }
 
-  if (auth.user?.role === 'DOCENTE') return true;
-  return { name: 'login', query: { error: 'unauthorized' } };
+  return true;
 });
 
 export default router;

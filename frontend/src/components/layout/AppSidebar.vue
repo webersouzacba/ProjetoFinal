@@ -1,6 +1,7 @@
 <template>
-  <aside class="app-sidebar d-flex flex-column">
-    <div class="app-sidebar__brand px-3 py-3 border-bottom">
+  <div class="sidebar-root d-flex flex-column">
+    <!-- Brand -->
+    <div class="sidebar-brand px-3 py-3 border-bottom">
       <div class="d-flex align-items-center gap-2">
         <span class="brand-mark">PF</span>
         <div class="brand-text">
@@ -10,67 +11,101 @@
       </div>
     </div>
 
-    <nav class="app-sidebar__nav flex-grow-1 px-2 py-3">
+    <!-- Nav -->
+    <nav class="sidebar-nav flex-grow-1 px-2 py-3">
       <ul class="nav nav-pills flex-column gap-1">
         <li class="nav-item">
           <RouterLink class="nav-link" to="/">
-            <i class="bi bi-house me-2" />
-            Início
-          </RouterLink>
-        </li>
-
-        <li class="nav-item">
-          <RouterLink class="nav-link" to="/docentes">
-            <i class="bi bi-people me-2" />
-            Docentes
+            <i class="bi bi-house me-2" />Início
           </RouterLink>
         </li>
 
         <li class="nav-item">
           <RouterLink class="nav-link" to="/propostas">
-            <i class="bi bi-journal-text me-2" />
-            Propostas
+            <i class="bi bi-journal-text me-2" />Propostas
+          </RouterLink>
+        </li>
+
+        <li v-if="canManage" class="nav-item">
+          <RouterLink class="nav-link" to="/propostas/nova">
+            <i class="bi bi-plus-circle me-2" />Nova Proposta
+          </RouterLink>
+        </li>
+
+        <hr class="my-2" />
+
+        <li class="nav-item">
+          <RouterLink class="nav-link" to="/docentes">
+            <i class="bi bi-people me-2" />Docentes
+          </RouterLink>
+        </li>
+
+        <li v-if="canManage" class="nav-item">
+          <RouterLink class="nav-link" to="/docentes/novo">
+            <i class="bi bi-person-plus me-2" />Novo Docente
           </RouterLink>
         </li>
 
         <li class="nav-item">
-          <RouterLink class="nav-link" to="/propostas/nova">
-            <i class="bi bi-plus-circle me-2" />
-            Nova Proposta
+          <RouterLink class="nav-link" to="/alunos">
+            <i class="bi bi-mortarboard me-2" />Alunos
           </RouterLink>
         </li>
 
-        <li class="nav-item mt-2">
-          <RouterLink class="nav-link" to="/login">
-            <i class="bi bi-box-arrow-in-right me-2" />
-            Login
+        <li v-if="canManage" class="nav-item">
+          <RouterLink class="nav-link" to="/alunos/novo">
+            <i class="bi bi-person-plus-fill me-2" />Novo Aluno
           </RouterLink>
         </li>
       </ul>
     </nav>
-  </aside>
+
+    <!-- Auth action -->
+    <div class="sidebar-auth border-top px-2 py-2">
+      <!-- Não autenticado -->
+      <RouterLink v-if="!isLogged" class="nav-link d-flex align-items-center px-2" to="/login">
+        <i class="bi bi-box-arrow-in-right me-2" />Login
+      </RouterLink>
+
+      <!-- Autenticado -->
+      <button
+        v-else
+        type="button"
+        class="btn btn-link nav-link d-flex align-items-center px-2 text-danger"
+        @click="handleLogout"
+      >
+        <i class="bi bi-box-arrow-right me-2" />Logout
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const isLogged = computed(() => !!auth?.token)
+const canManage = computed(() => !!auth?.token && auth?.user?.role === 'DOCENTE')
+
+function handleLogout () {
+  if (auth?.logout) auth.logout()
+  router.push({ name: 'login' }).catch(() => {})
+}
 </script>
 
 <style scoped>
-/* Evita scrollbar “desnecessária” no container do sidebar */
-.app-sidebar {
-  height: 100vh;
+.sidebar-root {
+  height: 100%;
   overflow: hidden;
 }
 
-/* Importante em layouts flex: permite que o nav calcule altura corretamente */
-.app-sidebar__nav {
+.sidebar-nav {
   min-height: 0;
   overflow-y: auto;
-}
-
-/* Mantém header fixo sem encolher */
-.app-sidebar__brand {
-  flex: 0 0 auto;
 }
 
 .brand-mark {
@@ -84,11 +119,11 @@ import { RouterLink } from 'vue-router'
   background: rgba(0, 0, 0, 0.06);
 }
 
-.app-sidebar__nav .nav-link {
+.sidebar-auth .nav-link {
   border-radius: 10px;
 }
 
-.app-sidebar__nav .nav-link.router-link-active {
+.nav-link.router-link-active {
   font-weight: 600;
 }
 </style>

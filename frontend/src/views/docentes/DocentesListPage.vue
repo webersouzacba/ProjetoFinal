@@ -1,14 +1,23 @@
 <template>
-  <!-- ✅ root único para satisfazer vue/valid-template-root -->
   <div>
     <PageHeader
       title="Docentes"
       subtitle="Listagem pública de docentes disponíveis para orientar propostas."
     >
       <template #actions>
-        <RouterLink class="btn btn-outline-secondary" to="/">
-          <i class="bi bi-arrow-left me-1" />Voltar
-        </RouterLink>
+        <div class="d-flex gap-2">
+          <RouterLink class="btn btn-outline-secondary" to="/">
+            <i class="bi bi-arrow-left me-1" />Voltar
+          </RouterLink>
+
+          <RouterLink
+            v-if="canManage"
+            class="btn btn-primary"
+            to="/docentes/novo"
+          >
+            <i class="bi bi-plus-circle me-1" />Novo docente
+          </RouterLink>
+        </div>
       </template>
     </PageHeader>
 
@@ -84,6 +93,10 @@
         <div class="text-muted small mt-3">
           Total: {{ filtered.length }}
         </div>
+
+        <div v-if="!canManage" class="alert alert-info mt-3 mb-0" role="alert">
+          Para criar, editar ou remover docentes, faça login como docente.
+        </div>
       </div>
     </div>
   </div>
@@ -94,6 +107,10 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHeader from '../../components/layout/PageHeader.vue'
 import { getDocentes, normalizeApiError } from '../../services/api'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
+const canManage = computed(() => !!auth?.token && auth?.user?.role === 'DOCENTE')
 
 const loading = ref(false)
 const error = ref(null)

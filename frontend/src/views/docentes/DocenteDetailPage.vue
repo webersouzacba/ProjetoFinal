@@ -9,6 +9,25 @@
         <RouterLink class="btn btn-outline-secondary" to="/docentes">
           <i class="bi bi-arrow-left me-1" />Voltar
         </RouterLink>
+
+        <RouterLink
+          v-if="canManage"
+          class="btn btn-outline-primary"
+          :to="`/docentes/${props.id}/editar`"
+        >
+          <i class="bi bi-pencil me-1" />Editar
+        </RouterLink>
+
+        <button
+          v-if="canManage"
+          class="btn btn-outline-danger"
+          type="button"
+          :disabled="deleting"
+          @click="handleDelete"
+        >
+          <span v-if="deleting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+          <i v-else class="bi bi-trash me-1" />Excluir
+        </button>
       </template>
     </PageHeader>
 
@@ -102,6 +121,9 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHeader from '../../components/layout/PageHeader.vue'
 import { api } from '../../services/apiClient'
+import { useAuthStore } from '../../stores/auth'
+import { useUiStore } from '../../stores/ui'
+import { deleteDocente, normalizeApiError } from '../../services/api'
 
 const props = defineProps({
   id: { type: String, required: true }
@@ -110,6 +132,12 @@ const props = defineProps({
 const loading = ref(false)
 const error = ref(null)
 const docente = ref(null)
+
+const auth = useAuthStore()
+const ui = useUiStore()
+const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
+
+const deleting = ref(false)
 
 const loadingPropostas = ref(false)
 const propostas = ref([])
@@ -156,4 +184,22 @@ onMounted(async () => {
   await fetchDocente()
   await fetchPropostas()
 })
+
+async function handleDelete () {
+  if (!docente.value?.id_docente) return
+  const ok = window.confirm('Confirma a exclusão deste docente?')
+  if (!ok) return
+
+  deleting.value = true
+  try {
+    await deleteDocente(String(docente.value.id_docente))
+    ui.toast({ kind: 'success', message: 'Docente excluído com sucesso.' })
+    window.location.assign('/docentes')
+  } catch (e) {
+    const msg = normalizeApiError(e).message || 'Falha ao excluir docente.'
+    ui.toast({ kind: 'danger', message: msg, timeout: 5500 })
+  } finally {
+    deleting.value = false
+  }
+}
 </script>

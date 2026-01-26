@@ -26,4 +26,35 @@ async function get(req, res, next) {
   }
 }
 
-module.exports = { list, get };
+// -------------------------
+// CRUD autenticado (DOCENTE)
+// -------------------------
+
+async function create(req, res, next) {
+  try {
+    const created = await service.create(req.body);
+    res.status(201).json(toJsonSafe(created));
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function update(req, res, next) {
+  try {
+    const updated = await service.update(req.params.id, req.body);
+    res.json(toJsonSafe(updated));
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function remove(req, res, next) {
+  try {
+    await service.remove(req.params.id);
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { list, get, create, update, remove };
