@@ -20,9 +20,10 @@
           </RouterLink>
         </li>
 
-        <li class="nav-item">
+        <!-- Propostas: acesso autenticado (docentes) -->
+        <li v-if="isLogged" class="nav-item">
           <RouterLink class="nav-link" to="/propostas">
-            <i class="bi bi-journal-text me-2" />Propostas
+            <i class="bi bi-journal-text me-2" />Minhas Propostas
           </RouterLink>
         </li>
 
@@ -34,6 +35,7 @@
 
         <hr class="my-2" />
 
+        <!-- Docentes: consulta pública conforme enunciado -->
         <li class="nav-item">
           <RouterLink class="nav-link" to="/docentes">
             <i class="bi bi-people me-2" />Docentes
@@ -46,7 +48,7 @@
           </RouterLink>
         </li>
 
-        <!-- IMPORTANTE: Alunos é autenticado. Não mostrar para anônimo -->
+        <!-- Alunos: autenticado -->
         <li v-if="isLogged" class="nav-item">
           <RouterLink class="nav-link" to="/alunos">
             <i class="bi bi-mortarboard me-2" />Alunos

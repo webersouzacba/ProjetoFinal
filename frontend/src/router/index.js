@@ -29,8 +29,11 @@ const routes = [
       { path: 'login', name: 'login', component: LoginView },
       { path: 'auth/callback', name: 'auth-callback', component: AuthCallbackView },
 
-      // Docentes
+      // Docentes (consulta pública conforme enunciado)
       { path: 'docentes', name: 'docentes', component: DocentesListPage },
+      { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
+
+      // Docentes (CRUD autenticado)
       {
         path: 'docentes/novo',
         name: 'docente-new',
@@ -45,9 +48,8 @@ const routes = [
         props: (r) => ({ mode: 'edit', id: r.params.id }),
         meta: { requiresAuth: true }
       },
-      { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 
-      // Alunos (autenticado)
+      // Alunos (CRUD autenticado)
       { path: 'alunos', name: 'alunos', component: AlunosListPage, meta: { requiresAuth: true } },
       {
         path: 'alunos/novo',
@@ -71,8 +73,9 @@ const routes = [
         meta: { requiresAuth: true }
       },
 
-      // Propostas
-      { path: 'propostas', name: 'propostas', component: PropostasListPage },
+      // Propostas (consulta/gestão autenticada conforme enunciado)
+      { path: 'propostas', name: 'propostas', component: PropostasListPage, meta: { requiresAuth: true } },
+      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true, meta: { requiresAuth: true } },
       {
         path: 'propostas/nova',
         name: 'proposta-new',
@@ -86,8 +89,7 @@ const routes = [
         component: PropostaFormPage,
         props: (r) => ({ mode: 'edit', id: r.params.id }),
         meta: { requiresAuth: true }
-      },
-      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true }
+      }
     ]
   }
 ]
@@ -102,7 +104,7 @@ router.beforeEach(async (to) => {
 
   const auth = useAuthStore()
 
-  // valida exp localmente para não ficar “meio logado”
+  // Valida exp localmente para não ficar “meio logado”
   const v = auth.validateLocalToken()
   if (!v.ok) {
     return {
@@ -114,7 +116,7 @@ router.beforeEach(async (to) => {
     }
   }
 
-  // se ainda não tem user, tenta /me
+  // Se ainda não tem user, tenta /me (garante papel/role para menu)
   if (!auth.user) {
     try {
       await auth.fetchMe()

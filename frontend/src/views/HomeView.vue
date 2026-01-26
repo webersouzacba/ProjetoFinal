@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-4">
-    <!-- Hero (mais limpo) -->
+    <!-- Hero -->
     <div class="card shadow-sm border-0 mb-4">
       <div class="card-body p-4 p-lg-5">
         <div class="row align-items-center g-4">
@@ -15,32 +15,35 @@
             </h1>
 
             <p class="mb-4 text-muted">
-              Centralize e publique propostas de temas. Docentes gerenciam propostas; estudantes consultam o catálogo público.
+              Docentes autenticados podem consultar e gerir as suas propostas. Utilizadores anónimos podem consultar a lista
+              de docentes.
             </p>
 
             <div class="d-flex flex-wrap gap-2">
-              <RouterLink to="/propostas" class="btn btn-primary">
-                <i class="bi bi-search me-2"></i>
-                Ver propostas públicas
-              </RouterLink>
+              <!-- CORREÇÃO: v-if/v-else precisam estar em blocos adjacentes -->
+              <template v-if="isAuthenticated">
+                <RouterLink to="/propostas" class="btn btn-primary">
+                  <i class="bi bi-journal-text me-2"></i>
+                  Aceder às minhas propostas
+                </RouterLink>
 
-              <RouterLink
-                v-if="isAuthenticated"
-                to="/propostas/nova"
-                class="btn btn-outline-primary"
-              >
-                <i class="bi bi-plus-circle me-2"></i>
-                Criar nova proposta
-              </RouterLink>
+                <RouterLink to="/propostas/nova" class="btn btn-outline-primary">
+                  <i class="bi bi-plus-circle me-2"></i>
+                  Criar nova proposta
+                </RouterLink>
+              </template>
 
-              <RouterLink
-                v-else
-                to="/login"
-                class="btn btn-outline-secondary"
-              >
-                <i class="bi bi-box-arrow-in-right me-2"></i>
-                Entrar para criar propostas
-              </RouterLink>
+              <template v-else>
+                <RouterLink to="/docentes" class="btn btn-primary">
+                  <i class="bi bi-people me-2"></i>
+                  Consultar docentes
+                </RouterLink>
+
+                <RouterLink to="/login" class="btn btn-outline-secondary">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>
+                  Login (docentes)
+                </RouterLink>
+              </template>
             </div>
 
             <div class="mt-4 d-flex flex-wrap gap-2">
@@ -54,12 +57,12 @@
               </span>
               <span class="badge text-bg-light border">
                 <i class="bi bi-diagram-3 me-1"></i>
-                CRUD de Propostas
+                CRUD de Propostas (autenticado)
               </span>
             </div>
           </div>
 
-          <!-- Imagem menor e mais discreta -->
+          <!-- Ilustração -->
           <div class="col-12 col-lg-4">
             <div class="d-flex justify-content-lg-end">
               <div class="rounded-4 bg-body-tertiary border overflow-hidden hero-illustration">
@@ -76,8 +79,8 @@
       </div>
     </div>
 
-    <!-- Indicadores (cards) -->
-    <div class="row g-3 mb-4">
+    <!-- Indicadores (apenas autenticado, para evitar conflito com regra de acesso) -->
+    <div v-if="isAuthenticated" class="row g-3 mb-4">
       <div class="col-12 col-md-6 col-xl-3">
         <div class="card shadow-sm border-0 h-100">
           <div class="card-body">
@@ -86,7 +89,7 @@
               <i class="bi bi-collection text-muted"></i>
             </div>
             <div class="display-6 mb-1">{{ fmt(stats.total) }}</div>
-            <div class="text-muted small">Visão geral do catálogo</div>
+            <div class="text-muted small">Visão geral</div>
           </div>
         </div>
       </div>
@@ -99,7 +102,7 @@
               <i class="bi bi-check2-circle text-muted"></i>
             </div>
             <div class="display-6 mb-1">{{ fmt(stats.publicadas) }}</div>
-            <div class="text-muted small">Disponíveis para consulta</div>
+            <div class="text-muted small">Em estado publicado</div>
           </div>
         </div>
       </div>
@@ -112,7 +115,7 @@
               <i class="bi bi-pencil-square text-muted"></i>
             </div>
             <div class="display-6 mb-1">{{ fmt(stats.rascunho) }}</div>
-            <div class="text-muted small">Em elaboração por docentes</div>
+            <div class="text-muted small">Em elaboração</div>
           </div>
         </div>
       </div>
@@ -131,7 +134,7 @@
       </div>
     </div>
 
-    <!-- Como funciona (mantido, porém sem "Dica" e lembrar que removemos recomendações) -->
+    <!-- Como funciona -->
     <div class="row g-3">
       <div class="col-12">
         <div class="card shadow-sm border-0">
@@ -149,9 +152,9 @@
                     <strong>Docentes</strong>
                   </div>
                   <ul class="mb-0 text-muted small">
-                    <li>Criam propostas com descrição, status e palavras-chave.</li>
-                    <li>Podem manter rascunhos e publicar quando pronto.</li>
-                    <li>Associam coorientadores e alunos (quando aplicável).</li>
+                    <li>Autenticam via Google OAuth 2.0.</li>
+                    <li>Consultam as suas propostas já efetuadas.</li>
+                    <li>Podem adicionar, alterar ou apagar propostas.</li>
                   </ul>
                 </div>
               </div>
@@ -160,12 +163,12 @@
                 <div class="p-3 border rounded-4 bg-body-tertiary h-100">
                   <div class="d-flex align-items-center gap-2 mb-2">
                     <i class="bi bi-people"></i>
-                    <strong>Estudantes</strong>
+                    <strong>Utilizadores anónimos</strong>
                   </div>
                   <ul class="mb-0 text-muted small">
-                    <li>Consultam o catálogo público de propostas.</li>
-                    <li>Aplicam filtros por status e orientador (quando disponíveis).</li>
-                    <li>Identificam temas alinhados aos seus interesses.</li>
+                    <li>Podem consultar a lista de docentes.</li>
+                    <li>Para gestão de propostas é necessário login.</li>
+                    <li>A interface adapta o menu conforme a autenticação.</li>
                   </ul>
                 </div>
               </div>
@@ -180,12 +183,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-
-// IMPORT RELATIVO (para não depender do alias @)
+import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
-
-// Ilustração (SVG no assets) - IMPORT RELATIVO
 import heroIllustrationUrl from '../assets/illustrations/propostas-hero.svg'
 
 const auth = useAuthStore()
@@ -195,23 +194,21 @@ const stats = ref({
   total: null,
   publicadas: null,
   rascunho: null,
-  orientadores: null,
+  orientadores: null
 })
-
-const statsError = ref(false)
 
 function fmt(v) {
   return v === null || v === undefined ? '—' : String(v)
 }
 
-onMounted(async () => {
+async function loadIndicadores() {
   const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9002').replace(/\/$/, '')
   const url = `${base}/api/propostas/indicadores`
 
-  statsError.value = false
-
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, {
+      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined
+    })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
 
@@ -219,23 +216,24 @@ onMounted(async () => {
       total: data.total ?? null,
       publicadas: data.publicadas ?? null,
       rascunho: data.rascunho ?? null,
-      orientadores: data.orientadores ?? null,
+      orientadores: data.orientadores ?? null
     }
-  } catch (e) {
-    statsError.value = true
-    stats.value = {
-      total: null,
-      publicadas: null,
-      rascunho: null,
-      orientadores: null,
-    }
+  } catch {
+    stats.value = { total: null, publicadas: null, rascunho: null, orientadores: null }
   }
+}
+
+onMounted(async () => {
+  if (isAuthenticated.value) await loadIndicadores()
 })
 
+watch(isAuthenticated, async (v) => {
+  if (v) await loadIndicadores()
+  else stats.value = { total: null, publicadas: null, rascunho: null, orientadores: null }
+})
 </script>
 
 <style scoped>
-/* Imagem menor e alinhada (desktop) */
 .hero-illustration {
   width: 100%;
   max-width: 360px;
