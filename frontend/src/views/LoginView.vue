@@ -8,7 +8,14 @@
     <div class="col-12 col-md-9 col-lg-6">
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          <div v-if="unauthorized" class="alert alert-danger" role="alert">
+          <div v-if="sessionExpired" class="alert alert-warning" role="alert">
+            <div class="fw-semibold mb-1">Sessão expirada</div>
+            <div>
+              Sua sessão expirou por inatividade (ou o token deixou de ser válido). Faça login novamente para continuar.
+            </div>
+          </div>
+
+          <div v-else-if="unauthorized" class="alert alert-danger" role="alert">
             <div class="fw-semibold mb-1">Acesso não autorizado</div>
             <div>
               O e-mail utilizado não está registado como docente nesta aplicação.
@@ -59,8 +66,12 @@ import PageHeader from '../components/layout/PageHeader.vue'
 
 const route = useRoute()
 
-const unauthorized = computed(() => String(route.query.error || '').toLowerCase() === 'unauthorized')
-const oauthUnavailable = computed(() => String(route.query.error || '').toLowerCase() === 'oauth_unavailable')
+const reason = computed(() => String(route.query.reason || '').toLowerCase())
+const error = computed(() => String(route.query.error || '').toLowerCase())
+
+const sessionExpired = computed(() => reason.value === 'session_expired')
+const unauthorized = computed(() => error.value === 'unauthorized')
+const oauthUnavailable = computed(() => error.value === 'oauth_unavailable')
 
 function login() {
   // Preserva rota alvo (quando vindo de uma rota protegida)

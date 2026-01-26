@@ -26,7 +26,7 @@
           </RouterLink>
         </li>
 
-        <li v-if="canManage" class="nav-item">
+        <li v-if="isDocente" class="nav-item">
           <RouterLink class="nav-link" to="/propostas/nova">
             <i class="bi bi-plus-circle me-2" />Nova Proposta
           </RouterLink>
@@ -40,19 +40,20 @@
           </RouterLink>
         </li>
 
-        <li v-if="canManage" class="nav-item">
+        <li v-if="isDocente" class="nav-item">
           <RouterLink class="nav-link" to="/docentes/novo">
             <i class="bi bi-person-plus me-2" />Novo Docente
           </RouterLink>
         </li>
 
-        <li class="nav-item">
+        <!-- IMPORTANTE: Alunos é autenticado. Não mostrar para anônimo -->
+        <li v-if="isLogged" class="nav-item">
           <RouterLink class="nav-link" to="/alunos">
             <i class="bi bi-mortarboard me-2" />Alunos
           </RouterLink>
         </li>
 
-        <li v-if="canManage" class="nav-item">
+        <li v-if="isDocente" class="nav-item">
           <RouterLink class="nav-link" to="/alunos/novo">
             <i class="bi bi-person-plus-fill me-2" />Novo Aluno
           </RouterLink>
@@ -88,11 +89,11 @@ import { useAuthStore } from '../../stores/auth'
 const router = useRouter()
 const auth = useAuthStore()
 
-const isLogged = computed(() => !!auth?.token)
-const canManage = computed(() => !!auth?.token && auth?.user?.role === 'DOCENTE')
+const isLogged = computed(() => auth.isAuthenticated)
+const isDocente = computed(() => auth.isDocente)
 
-function handleLogout () {
-  if (auth?.logout) auth.logout()
+function handleLogout() {
+  auth.logout()
   router.push({ name: 'login' }).catch(() => {})
 }
 </script>

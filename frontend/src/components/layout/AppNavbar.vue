@@ -64,31 +64,33 @@ import { useAuthStore } from '../../stores/auth'
 const router = useRouter()
 const auth = useAuthStore()
 
-const isLogged = computed(() => !!auth?.token)
+const isLogged = computed(() => auth.isAuthenticated)
 
 const displayName = computed(() => {
-  const u = auth?.user
+  const u = auth.user
   if (!u) return 'Utilizador'
   return u.nome || u.name || u.email || 'Utilizador'
 })
 
-const displayEmail = computed(() => auth?.user?.email || '—')
-const displayRole = computed(() => auth?.user?.role || '—')
+const displayEmail = computed(() => auth.user?.email || '—')
+const displayRole = computed(() => auth.user?.role || '—')
 
-function handleLogout () {
-  if (auth?.logout) auth.logout()
+function handleLogout() {
+  auth.logout()
   router.push({ name: 'login' }).catch(() => {})
 }
 
-// Opcional: tenta carregar /me se houver token mas user ainda não está preenchido
+// garante coerência ao montar navbar
 onMounted(async () => {
-  if (auth?.token && !auth?.user && auth?.fetchMe) {
+  const v = auth.validateLocalToken()
+  if (!v.ok) return
+
+  if (auth.token && !auth.user) {
     try {
       await auth.fetchMe()
     } catch {
-      // token ruim: limpa e força login
-      if (auth?.logout) auth.logout()
-      router.push({ name: 'login' }).catch(() => {})
+      auth.logout()
+      router.push({ name: 'login', query: { reason: 'session_expired' } }).catch(() => {})
     }
   }
 })
