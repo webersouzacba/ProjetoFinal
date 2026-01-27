@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { api } from '../services/apiClient'
 
+
 function decodeJwtPayload(token) {
   try {
     const parts = String(token || '').split('.')
@@ -108,3 +109,5 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 })
+
+

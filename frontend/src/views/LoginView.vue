@@ -1,85 +1,122 @@
 <template>
-  <PageHeader
-    title="Acesso de Docentes"
-    subtitle="Autenticação via Google OAuth 2.0. Acesso restrito a docentes previamente cadastrados."
-  />
-
   <div class="row justify-content-center">
-    <div class="col-12 col-md-9 col-lg-6">
+    <div class="col-12 col-md-10 col-lg-7 col-xl-6">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Acesso de Docentes</h2>
+        <p class="text-muted mb-0">
+          Autenticação via Google OAuth 2.0. Acesso restrito a docentes previamente cadastrados.
+        </p>
+      </div>
+
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          <div v-if="sessionExpired" class="alert alert-warning" role="alert">
-            <div class="fw-semibold mb-1">Sessão expirada</div>
-            <div>
-              Sua sessão expirou por inatividade (ou o token deixou de ser válido). Faça login novamente para continuar.
+          <div class="alert alert-info border-0 mb-4">
+            <div class="d-flex gap-2">
+              <i class="bi bi-info-circle-fill fs-5"></i>
+              <div>
+                <div class="fw-semibold mb-1">Como funciona</div>
+                <div class="small">
+                  Utilize sua conta Google cadastrada. Após o login, o sistema valida o e-mail contra a
+                  lista de docentes registados e aplica as permissões conforme a política de autorização.
+                </div>
+              </div>
             </div>
           </div>
 
-          <div v-else-if="unauthorized" class="alert alert-danger" role="alert">
-            <div class="fw-semibold mb-1">Acesso não autorizado</div>
-            <div>
-              O e-mail utilizado não está registado como docente nesta aplicação.
-              Caso acredite que isto seja um erro, solicite o cadastro ao administrador.
+          <!-- Opção B: Modo de autenticação -->
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="small text-muted">
+              <span class="me-1">Modo de autenticação:</span>
+              <span class="fw-semibold">{{ authModeLabel }}</span>
             </div>
-          </div>
 
-          <div v-else-if="oauthUnavailable" class="alert alert-warning" role="alert">
-            <div class="fw-semibold mb-1">Login indisponível</div>
-            <div>
-              O serviço de autenticação ainda não está configurado no servidor.
-              Tente novamente mais tarde.
-            </div>
-          </div>
-
-          <div class="alert alert-info" role="alert">
-            <div class="fw-semibold mb-1">Como funciona</div>
-            <div>
-              Utilize sua conta Google cadastrada. Após o login, o sistema valida o e-mail contra a lista de docentes
-              registados e aplica as permissões conforme a política de autorização.
-            </div>
+            <span v-if="config.loading" class="badge text-bg-light">
+              <i class="bi bi-arrow-repeat me-1"></i>Carregando
+            </span>
           </div>
 
           <div class="d-grid gap-2">
-            <button class="btn btn-danger" type="button" @click="login">
-              <i class="bi bi-google me-2" />Entrar com Google
+            <button
+              class="btn btn-danger btn-lg"
+              type="button"
+              @click="loginWithGoogle"
+              :disabled="!isAuthEnabled || config.loading"
+              title="Entrar com Google"
+            >
+              <i class="bi bi-google me-2"></i>
+              Entrar com Google
             </button>
 
-            <RouterLink class="btn btn-outline-secondary" to="/propostas">
-              <i class="bi bi-card-list me-2" />Ver propostas públicas
-            </RouterLink>
+            <!-- Quando auth está desligado, orienta o avaliador/aluno -->
+            <div v-if="!isAuthEnabled" class="alert alert-warning border-0 mb-0">
+              <div class="d-flex gap-2">
+                <i class="bi bi-shield-exclamation fs-5"></i>
+                <div class="small">
+                  A autenticação está <span class="fw-semibold">desativada (modo DEV)</span>.
+                  Você pode ativá-la pelo botão de alternância no menu superior/lateral.
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="mt-3 text-muted small">
-            Ao autenticar, você concorda em utilizar a aplicação apenas para fins académicos e de gestão de propostas.
+          <!-- Opção A: Nota académica discreta -->
+          <div class="mt-4">
+            <div class="small text-muted">
+              <i class="bi bi-mortarboard me-1"></i>
+              Nota: Esta aplicação foi desenvolvida como projeto académico no âmbito da unidade curricular
+              <span class="fst-italic">Programação Web Avançada</span>. As funcionalidades destinam-se
+              exclusivamente à demonstração de autenticação, autorização e gestão de propostas.
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Mensagem opcional de erro (se você já usa query params no router) -->
+      <div v-if="message" class="alert alert-secondary border-0 mt-3">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiBaseUrl } from '../services/apiBase'
-import PageHeader from '../components/layout/PageHeader.vue'
+import { useConfigStore } from '../stores/config'
 
 const route = useRoute()
+const config = useConfigStore()
 
-const reason = computed(() => String(route.query.reason || '').toLowerCase())
-const error = computed(() => String(route.query.error || '').toLowerCase())
+const isAuthEnabled = computed(() => config.isReady && config.authEnabled === true)
 
-const sessionExpired = computed(() => reason.value === 'session_expired')
-const unauthorized = computed(() => error.value === 'unauthorized')
-const oauthUnavailable = computed(() => error.value === 'oauth_unavailable')
+const authModeLabel = computed(() => {
+  if (!config.isReady) return 'Carregando...'
+  return config.authEnabled ? 'OAuth Google (JWT)' : 'DEV (bypass académico)'
+})
 
-function login() {
-  // Preserva rota alvo (quando vindo de uma rota protegida)
-  const redirect = route.query.redirect
-  if (redirect && typeof redirect === 'string') {
-    localStorage.setItem('postLoginRedirect', redirect)
-  }
-  // navegação para o endpoint do back-end (OAuth)
-  window.location.href = `${apiBaseUrl()}/auth/google`
+const message = computed(() => {
+  const reason = route.query?.reason
+  if (reason === 'session_expired') return 'Sua sessão expirou. Faça login novamente.'
+  if (reason === 'auth_required') return 'Acesso restrito. Faça login para continuar.'
+  return ''
+})
+
+function loginWithGoogle() {
+  // Em modo AUTH, redireciona para o backend iniciar o fluxo OAuth
+  // Ajuste a URL base se necessário (ou use variável de ambiente já existente no seu projeto)
+  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
 }
+
+onMounted(async () => {
+  if (!config.isReady && !config.loading) {
+    await config.fetchConfig().catch(() => {})
+  }
+})
 </script>
+
+<style scoped>
+/* Mantém a tela limpa e “madura” */
+.card {
+  border-radius: 14px;
+}
+</style>

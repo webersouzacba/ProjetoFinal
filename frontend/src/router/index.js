@@ -1,3 +1,4 @@
+// frontend/src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 
 import DefaultLayout from '../layouts/DefaultLayout.vue'
@@ -19,6 +20,7 @@ import AlunoDetailPage from '../views/alunos/AlunoDetailPage.vue'
 import AlunoFormPage from '../views/alunos/AlunoFormPage.vue'
 
 import { useAuthStore } from '../stores/auth'
+import { useConfigStore } from '../stores/config'
 
 const routes = [
   {
@@ -33,18 +35,18 @@ const routes = [
       { path: 'docentes', name: 'docentes', component: DocentesListPage },
       { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 
-      // Docentes (CRUD autenticado)
+      // Docentes (CRUD)
       {
         path: 'docentes/novo',
         name: 'docente-new',
         component: DocenteFormPage,
-        props: { mode: 'create' },
+        props: { mode: 'create' }
       },
       {
         path: 'docentes/:id/editar',
         name: 'docente-edit',
         component: DocenteFormPage,
-        props: (r) => ({ mode: 'edit', id: r.params.id }),
+        props: (r) => ({ mode: 'edit', id: r.params.id })
       },
 
       // Alunos (CRUD autenticado)
@@ -71,9 +73,15 @@ const routes = [
         meta: { requiresAuth: true }
       },
 
-      // Propostas (consulta/gestão autenticada conforme enunciado)
+      // Propostas (autenticado)
       { path: 'propostas', name: 'propostas', component: PropostasListPage, meta: { requiresAuth: true } },
-      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true, meta: { requiresAuth: true } },
+      {
+        path: 'propostas/:id',
+        name: 'proposta-detail',
+        component: PropostaDetailPage,
+        props: true,
+        meta: { requiresAuth: true }
+      },
       {
         path: 'propostas/nova',
         name: 'proposta-new',
@@ -98,11 +106,22 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  // Sempre tenta carregar config uma vez
+  const config = useConfigStore()
+  if (!config.isReady && !config.loading) {
+    await config.fetchConfig().catch(() => {})
+  }
+
+  // ✅ Se auth está DESLIGADO, não bloqueia rotas protegidas
+  if (config.isReady && config.authEnabled === false) {
+    return true
+  }
+
+  // Fluxo normal (auth ligado)
   if (!to.meta?.requiresAuth) return true
 
   const auth = useAuthStore()
 
-  // Valida exp localmente para não ficar “meio logado”
   const v = auth.validateLocalToken()
   if (!v.ok) {
     return {
@@ -114,7 +133,6 @@ router.beforeEach(async (to) => {
     }
   }
 
-  // Se ainda não tem user, tenta /me (garante papel/role para menu)
   if (!auth.user) {
     try {
       await auth.fetchMe()

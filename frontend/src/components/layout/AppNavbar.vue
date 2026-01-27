@@ -1,7 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark app-navbar">
     <div class="container-fluid">
-      <!-- Botão menu (mobile offcanvas) -->
       <button
         class="btn btn-outline-light d-lg-none me-2"
         type="button"
@@ -18,39 +17,55 @@
       </span>
 
       <div class="ms-auto d-flex align-items-center gap-2">
-        <!-- Não autenticado -->
-        <RouterLink v-if="!isLogged" class="btn btn-outline-light btn-sm" to="/login">
-          <i class="bi bi-box-arrow-in-right me-1" />Login
-        </RouterLink>
+        <!-- ✅ Toggle acadêmico de autenticação (sempre visível) -->
+        <button
+          class="btn btn-sm"
+          :class="toggleBtnClass"
+          type="button"
+          @click="toggleAuth"
+          :disabled="config.loading || !config.isReady"
+          :title="toggleTitle"
+        >
+          <i class="bi me-1" :class="toggleIcon" />
+          {{ toggleLabel }}
+        </button>
 
-        <!-- Autenticado -->
-        <div v-else class="dropdown">
-          <button
-            class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <i class="bi bi-person-circle me-2" />
-            <span class="d-none d-sm-inline">{{ displayName }}</span>
-          </button>
+        <!-- AUTH ligado: login/logout normal -->
+        <template v-if="config.isReady && config.authEnabled === true">
+          <RouterLink v-if="!isLogged" class="btn btn-outline-light btn-sm" to="/login">
+            <i class="bi bi-box-arrow-in-right me-1" />Login
+          </RouterLink>
 
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li class="px-3 py-2">
-              <div class="fw-semibold">{{ displayName }}</div>
-              <div class="text-muted small">{{ displayEmail }}</div>
-              <div class="text-muted small">Perfil: {{ displayRole }}</div>
-            </li>
+          <div v-else class="dropdown">
+            <button
+              class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-person-circle me-2" />
+              <span class="d-none d-sm-inline">{{ displayName }}</span>
+            </button>
 
-            <li><hr class="dropdown-divider" /></li>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="px-3 py-2">
+                <div class="fw-semibold">{{ displayName }}</div>
+                <div class="text-muted small">{{ displayEmail }}</div>
+                <div class="text-muted small">Perfil: {{ displayRole }}</div>
+              </li>
 
-            <li>
-              <button class="dropdown-item text-danger" type="button" @click="handleLogout">
-                <i class="bi bi-box-arrow-right me-2" />Logout
-              </button>
-            </li>
-          </ul>
-        </div>
+              <li><hr class="dropdown-divider" /></li>
+
+              <li>
+                <button class="dropdown-item text-danger" type="button" @click="handleLogout">
+                  <i class="bi bi-box-arrow-right me-2" />Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        </template>
+
+        <!-- AUTH desligado: não mostra login/logout -->
       </div>
     </div>
   </nav>
@@ -60,9 +75,11 @@
 import { computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import { useConfigStore } from '../../stores/config'
 
 const router = useRouter()
 const auth = useAuthStore()
+const config = useConfigStore()
 
 const isLogged = computed(() => auth.isAuthenticated)
 
@@ -71,26 +88,69 @@ const displayName = computed(() => {
   if (!u) return 'Utilizador'
   return u.nome || u.name || u.email || 'Utilizador'
 })
-
 const displayEmail = computed(() => auth.user?.email || '—')
 const displayRole = computed(() => auth.user?.role || '—')
+
+const toggleLabel = computed(() => {
+  if (!config.isReady) return 'Carregando...'
+  return config.authEnabled ? 'Desativar autenticação' : 'Ativar autenticação'
+})
+const toggleIcon = computed(() => {
+  if (!config.isReady) return 'bi-hourglass-split'
+  return config.authEnabled ? 'bi-shield-x' : 'bi-shield-lock'
+})
+const toggleBtnClass = computed(() => {
+  if (!config.isReady) return 'btn-outline-light'
+  return config.authEnabled ? 'btn-outline-secondary' : 'btn-outline-warning'
+})
+const toggleTitle = computed(() => {
+  if (!config.isReady) return 'Carregando configuração...'
+  return config.authEnabled
+    ? 'Modo OAuth/JWT ligado: clique para voltar ao modo DEV (acadêmico)'
+    : 'Modo DEV ligado: clique para ativar OAuth/JWT'
+})
 
 function handleLogout() {
   auth.logout()
   router.push({ name: 'login' }).catch(() => {})
 }
 
-// garante coerência ao montar navbar
-onMounted(async () => {
-  const v = auth.validateLocalToken()
-  if (!v.ok) return
+async function toggleAuth() {
+  try {
+    const enabled = await config.toggleAuthMode()
 
-  if (auth.token && !auth.user) {
-    try {
-      await auth.fetchMe()
-    } catch {
-      auth.logout()
-      router.push({ name: 'login', query: { reason: 'session_expired' } }).catch(() => {})
+    // Sempre limpa sessão local ao alternar
+    auth.logout()
+
+    if (enabled) {
+      // Foi para AUTH: direciona para login (fluxo Google)
+      router.push({ name: 'login' }).catch(() => {})
+    } else {
+      // Foi para DEV: volta para home
+      router.push({ name: 'home' }).catch(() => {})
+    }
+  } catch {
+    // Sem barulho: mantém estado atual
+  }
+}
+
+onMounted(async () => {
+  if (!config.isReady && !config.loading) {
+    await config.fetchConfig().catch(() => {})
+  }
+
+  // Se auth ligado, mantém seu comportamento normal de restaurar sessão
+  if (config.authEnabled === true) {
+    const v = auth.validateLocalToken()
+    if (!v.ok) return
+
+    if (auth.token && !auth.user) {
+      try {
+        await auth.fetchMe()
+      } catch {
+        auth.logout()
+        router.push({ name: 'login', query: { reason: 'session_expired' } }).catch(() => {})
+      }
     }
   }
 })

@@ -3,12 +3,10 @@
     <AppNavbar />
 
     <div class="app-body">
-      <!-- Sidebar (desktop) -->
       <aside class="app-sidebar d-none d-lg-flex border-end">
         <AppSidebar />
       </aside>
 
-      <!-- Main content -->
       <main class="app-main" role="main">
         <div class="container py-4">
           <RouterView />
@@ -19,7 +17,6 @@
     <AppFooter />
     <ToastHost />
 
-    <!-- Sidebar (mobile offcanvas) -->
     <div
       id="appSidebar"
       class="offcanvas offcanvas-start d-lg-none"
@@ -40,47 +37,48 @@
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router';
-import AppNavbar from '../components/layout/AppNavbar.vue';
-import AppFooter from '../components/layout/AppFooter.vue';
-import AppSidebar from '../components/layout/AppSidebar.vue';
-import ToastHost from '../components/ui/ToastHost.vue';
+import { onMounted } from 'vue'
+import { RouterView } from 'vue-router'
+import AppNavbar from '../components/layout/AppNavbar.vue'
+import AppFooter from '../components/layout/AppFooter.vue'
+import AppSidebar from '../components/layout/AppSidebar.vue'
+import ToastHost from '../components/ui/ToastHost.vue'
+import { useConfigStore } from '../stores/config'
+
+const config = useConfigStore()
+
+onMounted(async () => {
+  if (!config.isReady && !config.loading) {
+    await config.fetchConfig().catch(() => {})
+  }
+})
 </script>
 
 <style scoped>
-/* 1) O shell vira o "viewport container" */
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* evita scroll duplicado no body/shell */
+  overflow: hidden;
 }
 
-/* 2) app-body ocupa o espaço entre navbar e footer */
 .app-body {
   flex: 1 1 auto;
   display: flex;
-  min-height: 0; /* crucial para flex + overflow funcionar corretamente */
+  min-height: 0;
 }
 
-/* 3) Sidebar desktop ocupa altura do app-body */
 .app-sidebar {
   width: 260px;
   flex: 0 0 260px;
   height: 100%;
   min-height: 0;
-  overflow: hidden; /* sidebar não deve ter scrollbar própria */
+  overflow: hidden;
 }
 
-/* 4) Main é o ÚNICO local com rolagem vertical */
 .app-main {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-}
-
-/* Opcional: se o container interno estiver estourando largura/altura */
-.app-main > .container {
-  max-width: 1200px;
 }
 </style>

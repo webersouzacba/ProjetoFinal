@@ -17,6 +17,7 @@
               required
               maxlength="200"
               placeholder="Ex.: Análise de Dados Educacionais"
+              :disabled="props.disabled"
             />
             <div class="form-hint d-flex align-items-center gap-2 mt-1">
               <i class="bi bi-info-circle" />
@@ -32,6 +33,7 @@
               rows="4"
               maxlength="2000"
               placeholder="Descreva brevemente o objetivo e o escopo da proposta."
+              :disabled="props.disabled"
             />
             <div class="form-hint d-flex align-items-center gap-2 mt-1">
               <i class="bi bi-info-circle" />
@@ -41,7 +43,7 @@
 
           <div class="col-12 col-md-4">
             <label class="form-label">Status</label>
-            <select class="form-select" v-model="local.status">
+            <select class="form-select" v-model="local.status" :disabled="props.disabled">
               <option value="rascunho">Rascunho</option>
               <option value="publicada">Publicada</option>
             </select>
@@ -63,18 +65,30 @@
         </div>
 
         <div class="row g-3">
+          <!-- Coorientadores -->
           <div class="col-12">
             <div class="d-flex align-items-center justify-content-between gap-2">
               <label class="form-label mb-0">Coorientadores</label>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearCoorientadores">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  @click="clearCoorientadores"
+                  :disabled="props.disabled || (local.coorientadores_ids || []).length === 0"
+                >
                   Limpar
                 </button>
               </div>
             </div>
 
             <!-- Regra: orientador (docente logado) NÃO deve aparecer como coorientador -->
-            <select class="form-select" multiple size="6" v-model="local.coorientadores_ids">
+            <select
+              class="form-select"
+              multiple
+              size="6"
+              v-model="local.coorientadores_ids"
+              :disabled="props.disabled"
+            >
               <option
                 v-for="d in docentesCoorientadores"
                 :key="String(d.id_docente)"
@@ -87,17 +101,23 @@
             <div class="form-hint">Selecione um ou mais docentes por nome (Ctrl/Cmd para seleção múltipla).</div>
           </div>
 
+          <!-- Alunos -->
           <div class="col-12">
             <div class="d-flex align-items-center justify-content-between gap-2">
               <label class="form-label mb-0">Alunos</label>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearAlunos">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  @click="clearAlunos"
+                  :disabled="props.disabled || (local.alunos_ids || []).length === 0"
+                >
                   Limpar
                 </button>
               </div>
             </div>
 
-            <select class="form-select" multiple size="6" v-model="local.alunos_ids">
+            <select class="form-select" multiple size="6" v-model="local.alunos_ids" :disabled="props.disabled">
               <option v-for="a in alunos" :key="String(a.id_aluno)" :value="String(a.id_aluno)">
                 {{ a.nome }}<span v-if="a.email"> ({{ a.email }})</span>
               </option>
@@ -106,35 +126,35 @@
             <div class="form-hint">Selecione um ou mais alunos (Ctrl/Cmd para seleção múltipla).</div>
           </div>
 
+          <!-- Palavras-chave (MULTI SELECT) -->
           <div class="col-12">
-            <label class="form-label">Palavras-chave</label>
-
-            <div class="d-flex flex-wrap gap-2">
-              <span
-                v-for="p in local.palavras_chave"
-                :key="p"
-                class="badge text-bg-secondary d-inline-flex align-items-center gap-2"
-              >
-                {{ p }}
-                <button class="btn btn-sm btn-link p-0 text-white" type="button" @click="removePalavra(p)">
-                  <i class="bi bi-x-lg" />
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <label class="form-label mb-0">Palavras-chave</label>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  @click="clearPalavrasChave($event)"
+                  :disabled="props.disabled || (local.palavras_chave || []).length === 0"
+                >
+                  Limpar
                 </button>
-              </span>
+              </div>
             </div>
 
-            <div class="input-group mt-2">
-              <select class="form-select" v-model="newPalavra">
-                <option value="">-- selecione --</option>
-                <option v-for="p in palavrasDisponiveis" :key="p.palavra" :value="p.palavra">
-                  {{ p.palavra }}
-                </option>
-              </select>
-              <button class="btn btn-outline-primary" type="button" @click="addPalavra" :disabled="!newPalavra">
-                Adicionar
-              </button>
-            </div>
+            <select
+              class="form-select"
+              multiple
+              size="6"
+              v-model="local.palavras_chave"
+              :disabled="props.disabled"
+            >
+              <option v-for="p in palavrasOptions" :key="p" :value="p">
+                {{ p }}
+              </option>
+            </select>
 
-            <div class="form-hint">Escolha palavras-chave para facilitar a busca e categorização da proposta.</div>
+            <div class="form-hint">Selecione uma ou mais palavras-chave (Ctrl/Cmd para seleção múltipla).</div>
           </div>
         </div>
       </div>
@@ -153,7 +173,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch, nextTick } from 'vue';
 import { api } from '../../../services/apiClient';
 import { useAuthStore } from '../../../stores/auth';
 
@@ -167,7 +187,7 @@ const emit = defineEmits(['submit', 'cancel']);
 
 const docentes = ref([]);
 const alunos = ref([]);
-const palavrasDisponiveis = ref([]);
+const palavrasDisponiveis = ref([]); // pode vir como ["IA", "Web"] OU [{ palavra: "IA" }, ...]
 const loadError = ref('');
 
 const local = reactive({
@@ -179,21 +199,17 @@ const local = reactive({
   palavras_chave: []
 });
 
-const newPalavra = ref('');
-
 // ===============================
 // Regra: Orientador não pode ser coorientador
 // ===============================
 const auth = useAuthStore();
 
-// Mantém robusto a possíveis variações de payload (id, id_docente, docenteId)
 const orientadorId = computed(() => {
   const u = auth.user || {};
   const id = u.id_docente ?? u.id ?? u.docenteId ?? null;
   return id ? String(id) : null;
 });
 
-// Lista filtrada para seleção de coorientadores
 const docentesCoorientadores = computed(() => {
   const oid = orientadorId.value;
   const list = docentes.value || [];
@@ -201,7 +217,6 @@ const docentesCoorientadores = computed(() => {
   return list.filter((d) => String(d.id_docente) !== oid);
 });
 
-// Se vier “sujo” (seed/edição antiga), remove automaticamente o orientador da seleção
 watch(
   () => orientadorId.value,
   (oid) => {
@@ -214,6 +229,18 @@ watch(
 );
 
 // ===============================
+// Palavras-chave: normaliza payload do backend
+// backend pode retornar:
+// - ["IA", "Web"]
+// - [{ palavra: "IA" }, { palavra: "Web" }]
+// ===============================
+const palavrasOptions = computed(() => {
+  const raw = palavrasDisponiveis.value || [];
+  return raw
+    .map((p) => (typeof p === 'string' ? p : p?.palavra))
+    .filter((p) => typeof p === 'string' && p.trim().length > 0)
+    .map((p) => p.trim());
+});
 
 function applyInitial(v) {
   local.titulo = v?.titulo ?? '';
@@ -234,17 +261,6 @@ const canSubmit = computed(() => {
   return (local.titulo || '').trim().length > 0;
 });
 
-function addPalavra() {
-  const p = (newPalavra.value || '').trim();
-  if (!p) return;
-  if (!local.palavras_chave.includes(p)) local.palavras_chave.push(p);
-  newPalavra.value = '';
-}
-
-function removePalavra(p) {
-  local.palavras_chave = local.palavras_chave.filter((x) => x !== p);
-}
-
 function clearCoorientadores() {
   local.coorientadores_ids = [];
 }
@@ -253,24 +269,37 @@ function clearAlunos() {
   local.alunos_ids = [];
 }
 
+function clearPalavrasChave(evt) {
+  local.palavras_chave = [];
+
+  // Evita o botão ficar "pressionado/cinza" ao virar disabled imediatamente após o clique
+  nextTick(() => {
+    evt?.currentTarget?.blur?.();
+  });
+}
+
 async function loadCombos() {
   loadError.value = '';
   try {
-    // IMPORTANTE: endpoints corretos no backend são /api/*
+    // Endpoints corretos no backend são /api/*
     const [doc, alu, pal] = await Promise.all([
       api.get('/api/docentes'),
       api.get('/api/alunos'),
       api.get('/api/palavras-chave')
     ]);
 
-    docentes.value = doc.data || [];
-    alunos.value = alu.data || [];
-    palavrasDisponiveis.value = pal.data || [];
+    docentes.value = Array.isArray(doc.data) ? doc.data : [];
+    alunos.value = Array.isArray(alu.data) ? alu.data : [];
+    palavrasDisponiveis.value = Array.isArray(pal.data) ? pal.data : [];
   } catch (e) {
     loadError.value =
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       e?.message ||
       'Falha ao carregar listas (docentes/alunos/palavras-chave).';
+    docentes.value = [];
+    alunos.value = [];
+    palavrasDisponiveis.value = [];
   }
 }
 
@@ -288,10 +317,10 @@ function emitSubmit() {
     titulo: local.titulo,
     descricao: local.descricao,
     status: local.status,
-    // Nota: front envia strings; backend normaliza
-    coorientadores_ids: filteredCoor,
-    alunos_ids: local.alunos_ids,
-    palavras_chave: local.palavras_chave
+    // front envia strings; backend normaliza
+    coorientadores_ids: filteredCoor.map(String),
+    alunos_ids: (local.alunos_ids || []).map(String),
+    palavras_chave: (local.palavras_chave || []).map((p) => String(p).trim()).filter(Boolean)
   });
 }
 </script>
