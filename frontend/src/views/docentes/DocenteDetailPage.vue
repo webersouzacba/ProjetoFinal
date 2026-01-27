@@ -11,7 +11,6 @@
         </RouterLink>
 
         <RouterLink
-          v-if="canManage"
           class="btn btn-outline-primary"
           :to="`/docentes/${props.id}/editar`"
         >
@@ -19,7 +18,7 @@
         </RouterLink>
 
         <button
-          v-if="canManage"
+  
           class="btn btn-outline-danger"
           type="button"
           :disabled="deleting"
@@ -110,11 +109,18 @@
           <div class="text-muted small mt-3">
             Total: {{ propostas.length }}
           </div>
+      <div v-if="!canManage" class="alert alert-warning mt-3" role="alert">
+        <strong>Ambiente académico:</strong> o cadastro/edição de docentes está disponível sem login
+        para facilitar a validação da prova de conceito (simulação).
+      </div>
+
         </div>
       </div>
     </template>
   </div>
 </template>
+
+
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'

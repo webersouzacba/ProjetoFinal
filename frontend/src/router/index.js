@@ -39,14 +39,12 @@ const routes = [
         name: 'docente-new',
         component: DocenteFormPage,
         props: { mode: 'create' },
-        meta: { requiresAuth: true }
       },
       {
         path: 'docentes/:id/editar',
         name: 'docente-edit',
         component: DocenteFormPage,
         props: (r) => ({ mode: 'edit', id: r.params.id }),
-        meta: { requiresAuth: true }
       },
 
       // Alunos (CRUD autenticado)

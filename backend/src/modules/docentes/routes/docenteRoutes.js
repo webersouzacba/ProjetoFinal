@@ -9,8 +9,8 @@ router.get('/', controller.list);
 router.get('/:id', controller.get);
 
 // Autenticado (DOCENTE) — CRUD administrativo (POC)
-router.post('/', requireAuth, controller.create);
-router.put('/:id', requireAuth, controller.update);
-router.delete('/:id', requireAuth, controller.remove);
+router.post('/',  controller.create);
+router.put('/:id',  controller.update);
+router.delete('/:id',  controller.remove);
 
 module.exports = { docenteRoutes: router };

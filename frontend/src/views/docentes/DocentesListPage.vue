@@ -11,7 +11,6 @@
           </RouterLink>
 
           <RouterLink
-            v-if="canManage"
             class="btn btn-primary"
             to="/docentes/novo"
           >
@@ -94,9 +93,11 @@
           Total: {{ filtered.length }}
         </div>
 
-        <div v-if="!canManage" class="alert alert-info mt-3 mb-0" role="alert">
-          Para criar, editar ou remover docentes, faça login como docente.
+        <div v-if="!canManage" class="alert alert-warning mt-3" role="alert">
+          <strong>Ambiente académico:</strong> o cadastro/edição de docentes está disponível sem login
+          para facilitar a validação da prova de conceito (simulação).
         </div>
+
       </div>
     </div>
   </div>
