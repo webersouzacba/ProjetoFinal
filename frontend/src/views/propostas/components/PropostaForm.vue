@@ -15,29 +15,32 @@
               class="form-control"
               v-model.trim="local.titulo"
               required
+              minlength="5"
               maxlength="200"
               placeholder="Ex.: Análise de Dados Educacionais"
               :disabled="props.disabled"
             />
             <div class="form-hint d-flex align-items-center gap-2 mt-1">
               <i class="bi bi-info-circle" />
-              <small class="text-muted">Até 200 caracteres.</small>
+              <small class="text-muted">Obrigatório (mín. 5 e máx. 200 caracteres).</small>
             </div>
           </div>
 
           <div class="col-12">
-            <label class="form-label">Descrição</label>
+            <label class="form-label">Descrição / Objetivos <span class="text-danger">*</span></label>
             <textarea
               class="form-control"
               v-model.trim="local.descricao"
               rows="4"
+              required
+              minlength="10"
               maxlength="2000"
-              placeholder="Descreva brevemente o objetivo e o escopo da proposta."
+              placeholder="Descreva objetivos e escopo (mínimo 10 caracteres)."
               :disabled="props.disabled"
             />
             <div class="form-hint d-flex align-items-center gap-2 mt-1">
               <i class="bi bi-info-circle" />
-              <small class="text-muted">Campo opcional (até 2000 caracteres).</small>
+              <small class="text-muted">Obrigatório (mín. 10 e máx. 2000 caracteres).</small>
             </div>
           </div>
 
@@ -257,8 +260,11 @@ watch(
   { immediate: true, deep: true }
 );
 
+// ✅ Alinhado ao Zod do backend:
+// - titulo: min 5
+// - descricao_objetivos: min 10
 const canSubmit = computed(() => {
-  return (local.titulo || '').trim().length > 0;
+  return (local.titulo || '').trim().length >= 5 && (local.descricao || '').trim().length >= 10;
 });
 
 function clearCoorientadores() {
@@ -281,7 +287,6 @@ function clearPalavrasChave(evt) {
 async function loadCombos() {
   loadError.value = '';
   try {
-    // Endpoints corretos no backend são /api/*
     const [doc, alu, pal] = await Promise.all([
       api.get('/api/docentes'),
       api.get('/api/alunos'),
@@ -314,10 +319,14 @@ function emitSubmit() {
     : (local.coorientadores_ids || []);
 
   emit('submit', {
-    titulo: local.titulo,
-    descricao: local.descricao,
+    titulo: (local.titulo || '').trim(),
+
+    // ✅ Envia no campo esperado pelo schema (Zod) do backend
+    // O backend ainda tem compatibilidade com "descricao", mas aqui evitamos inconsistência.
+    descricao_objetivos: (local.descricao || '').trim(),
+
     status: local.status,
-    // front envia strings; backend normaliza
+
     coorientadores_ids: filteredCoor.map(String),
     alunos_ids: (local.alunos_ids || []).map(String),
     palavras_chave: (local.palavras_chave || []).map((p) => String(p).trim()).filter(Boolean)

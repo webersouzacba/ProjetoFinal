@@ -28,7 +28,6 @@ import { useUiStore } from '../../stores/ui'
 import PageHeader from '../../components/layout/PageHeader.vue'
 import PropostaForm from './components/PropostaForm.vue'
 
-// ✅ "mode" é opcional aqui só para evitar warning quando o router passa attrs extras
 const props = defineProps({
   id: { type: String, default: null },
   mode: { type: String, default: null }
@@ -62,7 +61,8 @@ onMounted(async () => {
 
   initialValues.value = {
     titulo: p.titulo || '',
-    descricao: p.descricao || '',
+    // ✅ robusto: suporta backend retornando "descricao" (atual) ou "descricao_objetivos"
+    descricao: p.descricao ?? p.descricao_objetivos ?? '',
     status: p.status || 'rascunho',
     coorientadores_ids: (p.proposta_coorientadores || []).map((x) => String(x.id_docente)),
     alunos_ids: (p.proposta_alunos || []).map((x) => String(x.id_aluno)),

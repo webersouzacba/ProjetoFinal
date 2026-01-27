@@ -126,8 +126,13 @@ const canEdit = computed(() => {
   if (auth.user?.role !== 'DOCENTE') return false
   if (!proposta.value) return false
   // Autorização contextual: só o orientador da proposta pode editar.
-  const emailOrientador = proposta.value?.docentes?.email
-  return Boolean(emailOrientador && auth.user?.email && emailOrientador === auth.user.email)
+  const idOrientador = proposta.value?.id_orientador
+  const idDocente = auth.user?.id_docente ?? auth.user?.id ?? auth.user?.docenteId
+  return Boolean(
+    idOrientador != null &&
+      idDocente != null &&
+      String(idOrientador) === String(idDocente)
+  )
 })
 
 onMounted(async () => {

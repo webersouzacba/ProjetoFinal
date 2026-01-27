@@ -65,7 +65,30 @@
           </div>
         </template>
 
-        <!-- AUTH desligado: não mostra login/logout -->
+        <!-- AUTH desligado (DEV): simula docente id=1 e mostra indicação visual -->
+        <template v-else-if="config.isReady && config.authEnabled === false">
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-warning btn-sm dropdown-toggle d-flex align-items-center"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              title="Simulação acadêmica (DEV): Docente ID=1"
+            >
+              <i class="bi bi-person-badge me-2" />
+              <span class="d-none d-sm-inline">DEV: {{ displayName }}</span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="px-3 py-2">
+                <div class="fw-semibold">{{ displayName }}</div>
+                <div class="text-muted small">{{ displayEmail }}</div>
+                <div class="text-muted small">Perfil: {{ displayRole }}</div>
+                <div class="text-muted small">Simulação acadêmica (DEV)</div>
+              </li>
+            </ul>
+          </div>
+        </template>
       </div>
     </div>
   </nav>
@@ -126,7 +149,8 @@ async function toggleAuth() {
       // Foi para AUTH: direciona para login (fluxo Google)
       router.push({ name: 'login' }).catch(() => {})
     } else {
-      // Foi para DEV: volta para home
+      // Foi para DEV: simula docente id=1 e volta para home
+      await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
       router.push({ name: 'home' }).catch(() => {})
     }
   } catch {
@@ -152,6 +176,11 @@ onMounted(async () => {
         router.push({ name: 'login', query: { reason: 'session_expired' } }).catch(() => {})
       }
     }
+  }
+
+  // Se auth desligado (DEV), garante sessão simulada para UI consistente
+  if (config.authEnabled === false) {
+    await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
   }
 })
 </script>

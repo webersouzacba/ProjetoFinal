@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from '../services/apiClient'
 
-
 function decodeJwtPayload(token) {
   try {
     const parts = String(token || '').split('.')
@@ -56,16 +55,12 @@ export const useAuthStore = defineStore('auth', {
 
     /**
      * Validação local do token (exp) para evitar UI incoerente.
-     * Retorna:
-     *  - { ok: true } se token está presente e não expirou
-     *  - { ok: false, reason: 'missing' | 'expired' | 'invalid' } caso contrário
      */
     validateLocalToken({ leewaySeconds = 30 } = {}) {
       if (!this.token) return { ok: false, reason: 'missing' }
 
       const payload = decodeJwtPayload(this.token)
       if (!payload || typeof payload.exp !== 'number') {
-        // Token não é JWT ou payload inválido
         this.clearSession()
         return { ok: false, reason: 'invalid' }
       }
@@ -80,14 +75,12 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async fetchMe() {
-      // Se não há token, não há o que buscar
       if (!this.token) {
         this.user = null
         localStorage.removeItem('user')
         return null
       }
 
-      // Antes de chamar API, valida exp localmente
       const v = this.validateLocalToken()
       if (!v.ok) return null
 
@@ -97,17 +90,53 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(this.user))
         return data
       } catch (err) {
-        // 401/403 -> limpa sessão (coerência UI)
         this.clearSession()
         throw err
       }
     },
 
     async logout() {
-      // JWT: não há sessão no backend. Basta limpar no client.
       this.clearSession()
+    },
+
+    /**
+     * MODO DEV (authEnabled=false)
+     * Simula um docente logado (por padrão, id=1) para:
+     * - validar controles de autorização no front-end;
+     * - exibir estado no cabeçalho.
+     */
+    async bootstrapDevDocente({ idDocente = 1 } = {}) {
+      // Se já existe uma sessão DEV válida, não faz nada.
+      if (
+        this.token === 'DEV' &&
+        this.user?.role === 'DOCENTE' &&
+        String(this.user?.id_docente) === String(idDocente)
+      ) {
+        return this.user
+      }
+
+      try {
+        const { data } = await api.get(`/api/docentes/${idDocente}`)
+        const devUser = {
+          ...data,
+          role: 'DOCENTE',
+          id_docente: data?.id_docente ?? idDocente,
+          dev: true
+        }
+        this.setSession({ token: 'DEV', user: devUser })
+        return devUser
+      } catch {
+        // fallback (se BD não tiver o docente 1 ainda)
+        const devUser = {
+          id_docente: idDocente,
+          nome: `Docente ${idDocente} (DEV)`,
+          email: 'dev.docente@local',
+          role: 'DOCENTE',
+          dev: true
+        }
+        this.setSession({ token: 'DEV', user: devUser })
+        return devUser
+      }
     }
   }
 })
-
-

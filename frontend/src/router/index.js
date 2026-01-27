@@ -36,66 +36,20 @@ const routes = [
       { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 
       // Docentes (CRUD)
-      {
-        path: 'docentes/novo',
-        name: 'docente-new',
-        component: DocenteFormPage,
-        props: { mode: 'create' }
-      },
-      {
-        path: 'docentes/:id/editar',
-        name: 'docente-edit',
-        component: DocenteFormPage,
-        props: (r) => ({ mode: 'edit', id: r.params.id })
-      },
+      { path: 'docentes/novo', name: 'docente-new', component: DocenteFormPage, props: { mode: 'create' } },
+      { path: 'docentes/:id/editar', name: 'docente-edit', component: DocenteFormPage, props: (r) => ({ mode: 'edit', id: r.params.id }) },
 
       // Alunos (CRUD autenticado)
       { path: 'alunos', name: 'alunos', component: AlunosListPage, meta: { requiresAuth: true } },
-      {
-        path: 'alunos/novo',
-        name: 'aluno-new',
-        component: AlunoFormPage,
-        props: { mode: 'create' },
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'alunos/:id/editar',
-        name: 'aluno-edit',
-        component: AlunoFormPage,
-        props: (r) => ({ mode: 'edit', id: r.params.id }),
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'alunos/:id',
-        name: 'aluno-detail',
-        component: AlunoDetailPage,
-        props: true,
-        meta: { requiresAuth: true }
-      },
+      { path: 'alunos/novo', name: 'aluno-new', component: AlunoFormPage, props: { mode: 'create' }, meta: { requiresAuth: true } },
+      { path: 'alunos/:id/editar', name: 'aluno-edit', component: AlunoFormPage, props: (r) => ({ mode: 'edit', id: r.params.id }), meta: { requiresAuth: true } },
+      { path: 'alunos/:id', name: 'aluno-detail', component: AlunoDetailPage, props: true, meta: { requiresAuth: true } },
 
       // Propostas (autenticado)
       { path: 'propostas', name: 'propostas', component: PropostasListPage, meta: { requiresAuth: true } },
-      {
-        path: 'propostas/:id',
-        name: 'proposta-detail',
-        component: PropostaDetailPage,
-        props: true,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'propostas/nova',
-        name: 'proposta-new',
-        component: PropostaFormPage,
-        props: { mode: 'create' },
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'propostas/:id/editar',
-        name: 'proposta-edit',
-        component: PropostaFormPage,
-        props: (r) => ({ mode: 'edit', id: r.params.id }),
-        meta: { requiresAuth: true }
-      }
+      { path: 'propostas/:id', name: 'proposta-detail', component: PropostaDetailPage, props: true, meta: { requiresAuth: true } },
+      { path: 'propostas/nova', name: 'proposta-new', component: PropostaFormPage, props: { mode: 'create' }, meta: { requiresAuth: true } },
+      { path: 'propostas/:id/editar', name: 'proposta-edit', component: PropostaFormPage, props: (r) => ({ mode: 'edit', id: r.params.id }), meta: { requiresAuth: true } }
     ]
   }
 ]
@@ -114,6 +68,12 @@ router.beforeEach(async (to) => {
 
   // ✅ Se auth está DESLIGADO, não bloqueia rotas protegidas
   if (config.isReady && config.authEnabled === false) {
+    // Simulação acadêmica: garante um "docente logado" no front-end (id=1)
+    // para validar controles de autorização (ex.: só orientador edita proposta).
+    const auth = useAuthStore()
+    if (!auth.user || auth.token !== 'DEV') {
+      await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
+    }
     return true
   }
 
