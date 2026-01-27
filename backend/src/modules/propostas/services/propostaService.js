@@ -1,5 +1,15 @@
 const repo = require('../repositories/propostaRepository');
 
+function ensureOrientadorNotInCoorientadores(idDocente, coorientadoresIds = []) {
+  const orientador = String(idDocente);
+  const has = (coorientadoresIds || []).map(String).includes(orientador);
+  if (has) {
+    const err = new Error('Regra inválida: o orientador não pode ser selecionado como coorientador.');
+    err.statusCode = 400;
+    throw err;
+  }
+}
+
 async function listPublic({ status, orientadorId } = {}) {
   return repo.listPublic({ status, orientadorId });
 }
@@ -43,6 +53,8 @@ function resolveDescricao(dto) {
 }
 
 async function createMine(idDocente, dto) {
+  ensureOrientadorNotInCoorientadores(idDocente, dto.coorientadores_ids);
+
   return repo.create({
     id_orientador: idDocente,
     titulo: dto.titulo,
@@ -56,6 +68,7 @@ async function createMine(idDocente, dto) {
 
 async function updateMine(idDocente, propostaId, dto) {
   await getMine(idDocente, propostaId);
+  ensureOrientadorNotInCoorientadores(idDocente, dto.coorientadores_ids);
 
   return repo.update({
     id_proposta: propostaId,
@@ -67,6 +80,7 @@ async function updateMine(idDocente, propostaId, dto) {
     palavrasChave: dto.palavras_chave,
   });
 }
+
 
 async function deleteMine(idDocente, propostaId) {
   await getMine(idDocente, propostaId);

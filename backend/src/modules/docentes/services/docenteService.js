@@ -1,3 +1,4 @@
+const { prisma } = require('../../../config/prisma');
 const repo = require('../repositories/docenteRepository');
 
 function validatePayload(dto, { partial = false } = {}) {
@@ -67,8 +68,28 @@ async function remove(id) {
     err.statusCode = 404;
     throw err;
   }
+
+  const idBig = BigInt(id);
+
+  // Contagens para mensagem “amigável”
+  const [qOrientador, qCoorientador] = await Promise.all([
+    prisma.proposta.count({ where: { id_orientador: idBig } }),
+    prisma.propostaCoorientador.count({ where: { id_docente: idBig } })
+  ]);
+
+  if (qOrientador > 0 || qCoorientador > 0) {
+    const parts = [];
+    if (qOrientador > 0) parts.push(`Docente é orientador de ${qOrientador} Propostas.`);
+    if (qCoorientador > 0) parts.push(`Docente é coorientador de ${qCoorientador} Propostas.`);
+
+    const err = new Error(parts.join(' ')); // ou '\n' se você preferir
+    err.statusCode = 409; // conflito / integridade
+    throw err;
+  }
+
   return repo.remove(id);
 }
+
 
 module.exports = {
   listPublic,
