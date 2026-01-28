@@ -6,6 +6,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const passport = require('passport')
+const path = require('path')
 
 const { configurePassport } = require('./modules/auth/services/passport')
 const { authRoutes } = require('./modules/auth/routes/authRoutes')
@@ -15,7 +16,9 @@ const { propostaRoutes } = require('./modules/propostas/routes/propostaRoutes')
 const { alunoRoutes } = require('./modules/alunos/routes/alunoRoutes')
 const { palavrasChaveRoutes } = require('./modules/palavrasChave/routes/palavrasChaveRoutes')
 const { appConfigRoutes } = require('./modules/appConfig/routes/appConfigRoutes')
+const { documentosRoutes } = require('./modules/documentos/routes/documentosRoutes')
 
+const { getDocsDir } = require('./modules/documentos/services/documentosService')
 const { errorHandler } = require('./middlewares/errorHandler')
 
 const app = express()
@@ -54,6 +57,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
+// 📄 Publicação de documentos do projeto (pasta /docs na raiz do repositório)
+const docsDir = getDocsDir()
+app.use('/docs', express.static(docsDir, { fallthrough: true }))
+
 // Rota de teste temporária
 const { prisma } = require('./config/prisma')
 if (process.env.NODE_ENV !== 'production') {
@@ -69,10 +76,13 @@ if (process.env.NODE_ENV !== 'production') {
   })
 }
 
-// ✅ NOVO: config runtime
+// ✅ Config runtime
 app.use('/api/config', appConfigRoutes)
 
-// Rotas já existentes
+// 📄 API pública de listagem de documentos
+app.use('/api/documentos', documentosRoutes)
+
+// Rotas existentes
 app.use('/auth', authRoutes)
 app.use('/api/auth', apiAuthRoutes)
 app.use('/api/docentes', docenteRoutes)

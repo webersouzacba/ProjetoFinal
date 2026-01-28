@@ -17,7 +17,12 @@
       </span>
 
       <div class="ms-auto d-flex align-items-center gap-2">
-        <!-- Toggle acadêmico de autenticação (sempre visível) -->
+        
+        <RouterLink class="btn btn-outline-light btn-sm" to="/documentos">
+          <i class="bi bi-file-earmark-text me-1" />Documentos
+        </RouterLink>
+
+<!-- Toggle acadêmico de autenticação (sempre visível) -->
         <button
           class="btn btn-sm"
           :class="toggleBtnClass"

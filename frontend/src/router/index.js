@@ -6,6 +6,7 @@ import DefaultLayout from '../layouts/DefaultLayout.vue'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import AuthCallbackView from '../views/AuthCallbackView.vue'
+import DocumentosView from '../views/DocumentosView.vue'
 
 import PropostasListPage from '../views/propostas/PropostasListPage.vue'
 import PropostaDetailPage from '../views/propostas/PropostaDetailPage.vue'
@@ -31,7 +32,10 @@ const routes = [
       { path: 'login', name: 'login', component: LoginView },
       { path: 'auth/callback', name: 'auth-callback', component: AuthCallbackView },
 
-      // Docentes (consulta pública conforme enunciado)
+      // Documentos (publico)
+      { path: 'documentos', name: 'documentos', component: DocumentosView },
+
+      // Docentes (consulta publica conforme enunciado)
       { path: 'docentes', name: 'docentes', component: DocentesListPage },
       { path: 'docentes/:id', name: 'docente-detail', component: DocenteDetailPage, props: true },
 

@@ -18,6 +18,12 @@
           </RouterLink>
         </li>
 
+        <li class="nav-item">
+          <RouterLink class="nav-link" to="/documentos">
+            <i class="bi bi-file-earmark-text me-2" />Documentos
+          </RouterLink>
+        </li>
+
         <!-- Propostas (apenas docente logado OU autenticação desativada) -->
         <li v-if="canAccessProtected" class="nav-item">
           <RouterLink class="nav-link" to="/propostas">
