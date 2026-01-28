@@ -15,7 +15,7 @@ const { docenteRoutes } = require('./modules/docentes/routes/docenteRoutes')
 const { propostaRoutes } = require('./modules/propostas/routes/propostaRoutes')
 const { alunoRoutes } = require('./modules/alunos/routes/alunoRoutes')
 const { palavrasChaveRoutes } = require('./modules/palavrasChave/routes/palavrasChaveRoutes')
-const { appConfigRoutes } = require('./modules/appConfig/routes/appConfigRoutes')
+const { appConfigRoutes } = require('./modules/appconfig/routes/appConfigRoutes')
 const { documentosRoutes } = require('./modules/documentos/routes/documentosRoutes')
 
 const { getDocsDir } = require('./modules/documentos/services/documentosService')
