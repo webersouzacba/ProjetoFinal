@@ -13,6 +13,23 @@
       >
         <i class="bi bi-pencil-square me-1" />Editar
       </RouterLink>
+
+      <button
+        v-if="canEdit"
+        class="btn btn-outline-danger"
+        type="button"
+        :disabled="deleting"
+        @click="handleDelete"
+      >
+        <span
+          v-if="deleting"
+          class="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        />
+        <i v-else class="bi bi-trash me-1" />
+        Excluir
+      </button>
     </template>
   </PageHeader>
 
@@ -108,8 +125,10 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router'
 import { usePropostasStore } from '../../stores/propostasStore';
 import { useAuthStore } from '../../stores/auth'
+import { useUiStore } from '../../stores/ui'
 
 import PageHeader from '../../components/layout/PageHeader.vue';
 import StatusBadge from '../../components/ui/StatusBadge.vue';
@@ -118,14 +137,17 @@ const props = defineProps({ id: { type: String, required: true } });
 
 const store = usePropostasStore();
 const auth = useAuthStore()
+const ui = useUiStore()
+const router = useRouter()
 const proposta = ref(null);
 const loading = ref(false);
+const deleting = ref(false)
 
 const canEdit = computed(() => {
   if (!auth.isAuthenticated) return false
   if (auth.user?.role !== 'DOCENTE') return false
   if (!proposta.value) return false
-  // Autorização contextual: só o orientador da proposta pode editar.
+  // Autorização contextual: só o orientador da proposta pode editar/excluir.
   const idOrientador = proposta.value?.id_orientador
   const idDocente = auth.user?.id_docente ?? auth.user?.id ?? auth.user?.docenteId
   return Boolean(
@@ -140,4 +162,27 @@ onMounted(async () => {
   proposta.value = await store.fetchPublicDetail(props.id);
   loading.value = false;
 });
+
+async function handleDelete() {
+  if (!proposta.value?.id_proposta) return
+  if (!canEdit.value) return
+
+  const ok = window.confirm(
+    `Confirma excluir a proposta #${proposta.value.id_proposta}?\n\nEsta ação não pode ser desfeita.`
+  )
+  if (!ok) return
+
+  deleting.value = true
+  try {
+    await store.deleteMine(proposta.value.id_proposta)
+    ui.toast({ kind: 'success', message: 'Proposta excluída com sucesso.' })
+    await store.fetchPublic()
+    router.push('/propostas')
+  } catch (e) {
+    const msg = e?.response?.data?.error || e?.message || 'Falha ao excluir a proposta.'
+    ui.toast({ kind: 'danger', message: msg, timeout: 5500 })
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
