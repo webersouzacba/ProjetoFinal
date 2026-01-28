@@ -38,3 +38,18 @@ Estrutura do monorepo:
 ```bash
 cd infra
 docker compose up -d
+
+## Política de permissões (versão final)
+
+A aplicação adota uma política única e consistente (sem perfis DEV/PROD via `.env`):
+
+1) **OAuth/JWT ativo (padrão) e utilizador deslogado**
+- **CRUD de Docentes**: permitido mesmo sem login (bootstrap académico), para que o professor avaliador possa cadastrar um docente com o seu e-mail Google antes do primeiro acesso.
+- **Demais funcionalidades (Propostas/Alunos)**: exigem login.
+
+2) **Docente autenticado**
+- Acesso total às funcionalidades do sistema.
+
+3) **Autenticação desativada (Simulação académica)**
+- Acesso total, simulando um docente logado (**Docente ID=1**), com indicação visual no cabeçalho.
+- Requer o seed para garantir a existência do Docente ID=1.

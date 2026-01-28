@@ -8,7 +8,7 @@
         </p>
       </div>
 
-      <!-- ✅ ERRO vindo do backend: /login?error=...&code=... -->
+      <!-- Mensagem de erro vinda do backend: /login?error=...&code=... -->
       <div v-if="oauthError" class="alert alert-danger border-0 mb-3" role="alert">
         <div class="d-flex gap-2 align-items-start">
           <i class="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -28,8 +28,8 @@
               <div>
                 <div class="fw-semibold mb-1">Como funciona</div>
                 <div class="small">
-                  Utilize sua conta Google cadastrada. Após o login, o sistema valida o e-mail contra a
-                  lista de docentes registados e aplica as permissões conforme a política de autorização.
+                  Utilize uma conta Google cadastrada como docente. Se a conta não estiver registada, cadastre primeiro
+                  em <span class="fw-semibold">Docentes</span> (bootstrap académico) e tente novamente.
                 </div>
               </div>
             </div>
@@ -37,7 +37,7 @@
 
           <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="small text-muted">
-              <span class="me-1">Modo de autenticação:</span>
+              <span class="me-1">Modo:</span>
               <span class="fw-semibold">{{ authModeLabel }}</span>
             </div>
 
@@ -62,8 +62,8 @@
               <div class="d-flex gap-2">
                 <i class="bi bi-shield-exclamation fs-5"></i>
                 <div class="small">
-                  A autenticação está <span class="fw-semibold">desativada (modo DEV)</span>.
-                  Você pode ativá-la pelo botão de alternância no menu superior/lateral.
+                  A autenticação está <span class="fw-semibold">desativada</span>.
+                  O sistema opera em <span class="fw-semibold">simulação académica</span> (Docente ID=1) para testes funcionais.
                 </div>
               </div>
             </div>
@@ -72,15 +72,12 @@
           <div class="mt-4">
             <div class="small text-muted">
               <i class="bi bi-mortarboard me-1"></i>
-              Nota: Esta aplicação foi desenvolvida como projeto académico no âmbito da unidade curricular
-              <span class="fst-italic">Programação Web Avançada</span>. As funcionalidades destinam-se
-              exclusivamente à demonstração de autenticação, autorização e gestão de propostas.
+              Aplicação desenvolvida como projeto académico no âmbito da UC <span class="fst-italic">Programação Web Avançada</span>.
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Mensagens internas do app (mantive seu comportamento anterior) -->
       <div v-if="message" class="alert alert-secondary border-0 mt-3">
         <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
       </div>
@@ -100,7 +97,7 @@ const isAuthEnabled = computed(() => config.isReady && config.authEnabled === tr
 
 const authModeLabel = computed(() => {
   if (!config.isReady) return 'Carregando...'
-  return config.authEnabled ? 'OAuth Google (JWT)' : 'DEV (bypass académico)'
+  return config.authEnabled ? 'Google OAuth2 (JWT)' : 'Simulação académica (Docente ID=1)'
 })
 
 const message = computed(() => {
@@ -121,17 +118,9 @@ const oauthCode = computed(() => {
 })
 
 function resolveBackendOrigin() {
-  // Muitos projetos guardam VITE_API_BASE_URL como ".../api"
-  // Para OAuth via navegador, precisamos do ORIGIN (sem /api)
   const raw = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9002').trim()
-
-  // remove barras finais
   const base = raw.replace(/\/+$/, '')
-
-  // se terminar com "/api", corta
-  const origin = base.replace(/\/api$/, '')
-
-  return origin || 'http://localhost:9002'
+  return base.replace(/\/api$/, '') || 'http://localhost:9002'
 }
 
 function loginWithGoogle() {
@@ -145,9 +134,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.card {
-  border-radius: 14px;
-}
-</style>
