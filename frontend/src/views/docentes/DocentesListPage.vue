@@ -5,7 +5,8 @@
         <i class="bi bi-house me-1" />Início
       </RouterLink>
 
-      <RouterLink v-if="canManage" class="btn btn-primary" to="/docentes/novo">
+      <!-- Política final: CRUD de docentes disponível mesmo sem login (bootstrap acadêmico) -->
+      <RouterLink class="btn btn-primary" to="/docentes/novo">
         <i class="bi bi-plus-lg me-1" />Novo docente
       </RouterLink>
     </template>
@@ -15,23 +16,19 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHeader from '../../components/layout/PageHeader.vue'
 import DocentesTable from './components/DocentesTable.vue'
 
 import { api } from '../../services/apiClient'
-import { useAuthStore } from '../../stores/auth'
 import { useUiStore } from '../../stores/ui'
 
-const auth = useAuthStore()
 const ui = useUiStore()
 
 const loading = ref(false)
 const error = ref('')
 const items = ref([])
-
-const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 
 async function load() {
   loading.value = true

@@ -1,14 +1,14 @@
 // backend/src/config/runtimeFlags.js
 /**
- * Feature flags em runtime (memória).
- * - Inicializa a partir de process.env.AUTH_ENABLED
- * - Pode ser alternada via endpoint (/api/config/auth/toggle)
+ * Flag de autenticação em runtime (memória).
+ * Regra final do projeto:
+ * - O sistema sempre inicia com OAuth/JWT ATIVO (authEnabled=true);
+ * - Pode ser alternada via endpoint (/api/config/auth/toggle) para fins de
+ *   simulação acadêmica (Docente ID=1).
  */
 
-let authEnabledRuntime = (() => {
-  const v = String(process.env.AUTH_ENABLED ?? 'true').toLowerCase()
-  return !(v === 'false' || v === '0' || v === 'no')
-})()
+// ✅ Sempre inicia com OAuth ativo
+let authEnabledRuntime = true
 
 function getAuthEnabled() {
   return authEnabledRuntime

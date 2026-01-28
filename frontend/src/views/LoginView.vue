@@ -8,6 +8,18 @@
         </p>
       </div>
 
+      <!-- ✅ ERRO vindo do backend: /login?error=...&code=... -->
+      <div v-if="oauthError" class="alert alert-danger border-0 mb-3" role="alert">
+        <div class="d-flex gap-2 align-items-start">
+          <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+          <div>
+            <div class="fw-semibold mb-1">Não foi possível concluir o login</div>
+            <div class="small">{{ oauthError }}</div>
+            <div v-if="oauthCode" class="small text-muted mt-1">Código: {{ oauthCode }}</div>
+          </div>
+        </div>
+      </div>
+
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <div class="alert alert-info border-0 mb-4">
@@ -23,7 +35,6 @@
             </div>
           </div>
 
-          <!-- Opção B: Modo de autenticação -->
           <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="small text-muted">
               <span class="me-1">Modo de autenticação:</span>
@@ -47,7 +58,6 @@
               Entrar com Google
             </button>
 
-            <!-- Quando auth está desligado, orienta o avaliador/aluno -->
             <div v-if="!isAuthEnabled" class="alert alert-warning border-0 mb-0">
               <div class="d-flex gap-2">
                 <i class="bi bi-shield-exclamation fs-5"></i>
@@ -59,7 +69,6 @@
             </div>
           </div>
 
-          <!-- Opção A: Nota académica discreta -->
           <div class="mt-4">
             <div class="small text-muted">
               <i class="bi bi-mortarboard me-1"></i>
@@ -71,7 +80,7 @@
         </div>
       </div>
 
-      <!-- Mensagem opcional de erro (se você já usa query params no router) -->
+      <!-- Mensagens internas do app (mantive seu comportamento anterior) -->
       <div v-if="message" class="alert alert-secondary border-0 mt-3">
         <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
       </div>
@@ -101,10 +110,33 @@ const message = computed(() => {
   return ''
 })
 
+const oauthError = computed(() => {
+  const err = route.query?.error
+  return typeof err === 'string' && err.trim().length ? err : ''
+})
+
+const oauthCode = computed(() => {
+  const code = route.query?.code
+  return typeof code === 'string' && code.trim().length ? code : ''
+})
+
+function resolveBackendOrigin() {
+  // Muitos projetos guardam VITE_API_BASE_URL como ".../api"
+  // Para OAuth via navegador, precisamos do ORIGIN (sem /api)
+  const raw = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9002').trim()
+
+  // remove barras finais
+  const base = raw.replace(/\/+$/, '')
+
+  // se terminar com "/api", corta
+  const origin = base.replace(/\/api$/, '')
+
+  return origin || 'http://localhost:9002'
+}
+
 function loginWithGoogle() {
-  // Em modo AUTH, redireciona para o backend iniciar o fluxo OAuth
-  // Ajuste a URL base se necessário (ou use variável de ambiente já existente no seu projeto)
-  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
+  const origin = resolveBackendOrigin()
+  window.location.href = `${origin}/auth/google`
 }
 
 onMounted(async () => {
@@ -115,7 +147,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Mantém a tela limpa e “madura” */
 .card {
   border-radius: 14px;
 }

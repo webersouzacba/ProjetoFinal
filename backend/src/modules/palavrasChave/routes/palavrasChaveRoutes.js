@@ -3,11 +3,10 @@ const { prisma } = require('../../../config/prisma');
 
 const router = express.Router();
 
-// Retorna lista "enum" baseada no BD (distinct em proposta_palavras_chave)
+// Retorna lista do DOMÍNIO (tabela mestre palavras_chave)
 router.get('/', async (req, res, next) => {
   try {
-    const rows = await prisma.propostaPalavraChave.findMany({
-      distinct: ['palavra'],
+    const rows = await prisma.palavraChave.findMany({
       select: { palavra: true },
       orderBy: { palavra: 'asc' }
     });

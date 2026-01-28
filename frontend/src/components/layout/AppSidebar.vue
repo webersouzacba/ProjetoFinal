@@ -18,14 +18,14 @@
           </RouterLink>
         </li>
 
-        <!-- Propostas -->
+        <!-- Propostas (apenas docente logado OU autenticação desativada) -->
         <li v-if="canAccessProtected" class="nav-item">
           <RouterLink class="nav-link" to="/propostas">
             <i class="bi bi-journal-text me-2" />Minhas Propostas
           </RouterLink>
         </li>
 
-        <li v-if="canDoDocenteActions" class="nav-item">
+        <li v-if="canManagePropostas" class="nav-item">
           <RouterLink class="nav-link" to="/propostas/nova">
             <i class="bi bi-plus-circle me-2" />Nova Proposta
           </RouterLink>
@@ -33,27 +33,27 @@
 
         <hr class="my-2" />
 
-        <!-- Docentes (público) -->
+        <!-- Docentes (CRUD sempre disponível – bootstrap acadêmico) -->
         <li class="nav-item">
           <RouterLink class="nav-link" to="/docentes">
             <i class="bi bi-people me-2" />Docentes
           </RouterLink>
         </li>
 
-        <li v-if="canDoDocenteActions" class="nav-item">
+        <li class="nav-item">
           <RouterLink class="nav-link" to="/docentes/novo">
             <i class="bi bi-person-plus me-2" />Novo Docente
           </RouterLink>
         </li>
 
-        <!-- Alunos -->
+        <!-- Alunos (apenas docente logado OU autenticação desativada) -->
         <li v-if="canAccessProtected" class="nav-item">
           <RouterLink class="nav-link" to="/alunos">
             <i class="bi bi-mortarboard me-2" />Alunos
           </RouterLink>
         </li>
 
-        <li v-if="canDoDocenteActions" class="nav-item">
+        <li v-if="canManagePropostas" class="nav-item">
           <RouterLink class="nav-link" to="/alunos/novo">
             <i class="bi bi-person-plus-fill me-2" />Novo Aluno
           </RouterLink>
@@ -88,7 +88,6 @@
       >
         <i class="bi bi-box-arrow-right me-2" />Logout
       </button>
-
       <!-- AUTH desligado: não mostra login/logout -->
     </div>
   </div>
@@ -108,9 +107,15 @@ const isLogged = computed(() => auth.isAuthenticated)
 const isDocente = computed(() => auth.isDocente)
 const isAuthEnabled = computed(() => config.isReady && config.authEnabled === true)
 
-// ✅ Se auth desligado, libera áreas protegidas
+// ✅ Áreas protegidas (lista/detalhe de alunos e propostas):
+// - liberadas para docente logado
+// - ou quando autenticação está desativada (simulação Docente ID=1)
 const canAccessProtected = computed(() => (config.isReady && config.authEnabled === false) || isLogged.value)
-const canDoDocenteActions = computed(() => (config.isReady && config.authEnabled === false) || isDocente.value)
+
+// ✅ Ações de criação (nova proposta/novo aluno):
+// - liberadas para docente logado
+// - ou quando autenticação está desativada (simulação Docente ID=1)
+const canManagePropostas = computed(() => (config.isReady && config.authEnabled === false) || isDocente.value)
 
 const toggleLabel = computed(() => {
   if (!config.isReady) return 'Carregando...'
@@ -140,6 +145,8 @@ async function toggleAuth() {
     if (enabled) {
       router.push({ name: 'login' }).catch(() => {})
     } else {
+      // Simulação acadêmica: assume Docente ID=1
+      await auth.bootstrapSimulatedDocente({ idDocente: 1 }).catch(() => {})
       router.push({ name: 'home' }).catch(() => {})
     }
   } catch {

@@ -49,6 +49,18 @@ model Proposta {
   @@map("propostas")
 }
 
+// Domínio (tabela mestre) de palavras-chave
+// A proposta se relaciona via tabela de junção (proposta_palavras_chave)
+model PalavraChave {
+  palavra   String   @id @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  proposta_palavras_chave PropostaPalavraChave[]
+
+  @@map("palavras_chave")
+}
+
 model PropostaCoorientador {
   id_proposta BigInt
   id_docente  BigInt
@@ -78,6 +90,7 @@ model PropostaPalavraChave {
   palavra     String   @map("palavra_chave") @db.VarChar(80)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   propostas   Proposta @relation(fields: [id_proposta], references: [id_proposta], onDelete: Cascade, map: "fk_ppc_proposta")
+  palavrasChave PalavraChave @relation(fields: [palavra], references: [palavra], map: "fk_ppc_palavra")
 
   @@id([id_proposta, palavra])
   @@index([palavra], map: "idx_ppc_palavra")
@@ -90,5 +103,3 @@ enum proposta_status {
   atribuida
   encerrada
 }
-
-

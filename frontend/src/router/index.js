@@ -71,8 +71,8 @@ router.beforeEach(async (to) => {
     // Simulação acadêmica: garante um "docente logado" no front-end (id=1)
     // para validar controles de autorização (ex.: só orientador edita proposta).
     const auth = useAuthStore()
-    if (!auth.user || auth.token !== 'DEV') {
-      await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
+    if (!auth.user || auth.token !== 'SIM') {
+      await auth.bootstrapSimulatedDocente({ idDocente: 1 }).catch(() => {})
     }
     return true
   }

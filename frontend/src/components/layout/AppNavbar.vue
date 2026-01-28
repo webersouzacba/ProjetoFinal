@@ -17,7 +17,7 @@
       </span>
 
       <div class="ms-auto d-flex align-items-center gap-2">
-        <!-- ✅ Toggle acadêmico de autenticação (sempre visível) -->
+        <!-- Toggle acadêmico de autenticação (sempre visível) -->
         <button
           class="btn btn-sm"
           :class="toggleBtnClass"
@@ -65,7 +65,7 @@
           </div>
         </template>
 
-        <!-- AUTH desligado (DEV): simula docente id=1 e mostra indicação visual -->
+        <!-- AUTH desligado: simula docente id=1 e mostra indicação visual -->
         <template v-else-if="config.isReady && config.authEnabled === false">
           <div class="dropdown">
             <button
@@ -73,10 +73,10 @@
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              title="Simulação acadêmica (DEV): Docente ID=1"
+              title="Simulação acadêmica: Docente ID=1"
             >
               <i class="bi bi-person-badge me-2" />
-              <span class="d-none d-sm-inline">DEV: {{ displayName }}</span>
+              <span class="d-none d-sm-inline">Simulação: {{ displayName }}</span>
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end">
@@ -84,7 +84,7 @@
                 <div class="fw-semibold">{{ displayName }}</div>
                 <div class="text-muted small">{{ displayEmail }}</div>
                 <div class="text-muted small">Perfil: {{ displayRole }}</div>
-                <div class="text-muted small">Simulação acadêmica (DEV)</div>
+                <div class="text-muted small">Docente simulado (ID=1)</div>
               </li>
             </ul>
           </div>
@@ -129,8 +129,8 @@ const toggleBtnClass = computed(() => {
 const toggleTitle = computed(() => {
   if (!config.isReady) return 'Carregando configuração...'
   return config.authEnabled
-    ? 'Modo OAuth/JWT ligado: clique para voltar ao modo DEV (acadêmico)'
-    : 'Modo DEV ligado: clique para ativar OAuth/JWT'
+    ? 'OAuth/JWT ligado: clique para ativar simulação acadêmica (Docente ID=1)'
+    : 'Simulação acadêmica ligada: clique para ativar OAuth/JWT'
 })
 
 function handleLogout() {
@@ -142,19 +142,19 @@ async function toggleAuth() {
   try {
     const enabled = await config.toggleAuthMode()
 
-    // Sempre limpa sessão local ao alternar
+    // sempre limpa a sessão ao alternar
     auth.logout()
 
     if (enabled) {
-      // Foi para AUTH: direciona para login (fluxo Google)
+      // OAuth/JWT ligado
       router.push({ name: 'login' }).catch(() => {})
     } else {
-      // Foi para DEV: simula docente id=1 e volta para home
-      await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
+      // simulação acadêmica
+      await auth.bootstrapSimulatedDocente({ idDocente: 1 }).catch(() => {})
       router.push({ name: 'home' }).catch(() => {})
     }
   } catch {
-    // Sem barulho: mantém estado atual
+    // mantém estado atual
   }
 }
 
@@ -163,7 +163,7 @@ onMounted(async () => {
     await config.fetchConfig().catch(() => {})
   }
 
-  // Se auth ligado, mantém seu comportamento normal de restaurar sessão
+  // OAuth ativo: tenta restaurar sessão
   if (config.authEnabled === true) {
     const v = auth.validateLocalToken()
     if (!v.ok) return
@@ -178,9 +178,9 @@ onMounted(async () => {
     }
   }
 
-  // Se auth desligado (DEV), garante sessão simulada para UI consistente
+  // Simulação: garante sessão simulada para UI consistente
   if (config.authEnabled === false) {
-    await auth.bootstrapDevDocente({ idDocente: 1 }).catch(() => {})
+    await auth.bootstrapSimulatedDocente({ idDocente: 1 }).catch(() => {})
   }
 })
 </script>

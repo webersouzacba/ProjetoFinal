@@ -99,8 +99,15 @@ async function create({
     }
 
     if (palavrasChave?.length) {
+      // Garante que as palavras existam no domínio (tabela mestre)
+      const unique = [...new Set(palavrasChave.map((p) => String(p).trim()).filter(Boolean))];
+      await tx.palavraChave.createMany({
+        data: unique.map((palavra) => ({ palavra })),
+        skipDuplicates: true
+      });
+
       await tx.propostaPalavraChave.createMany({
-        data: palavrasChave.map((palavra) => ({
+        data: unique.map((palavra) => ({
           id_proposta: pid,
           palavra
         }))
@@ -163,8 +170,15 @@ async function update({
     if (palavrasChave) {
       await tx.propostaPalavraChave.deleteMany({ where: { id_proposta: pid } });
       if (palavrasChave.length) {
+        // Garante que as palavras existam no domínio (tabela mestre)
+        const unique = [...new Set(palavrasChave.map((p) => String(p).trim()).filter(Boolean))];
+        await tx.palavraChave.createMany({
+          data: unique.map((palavra) => ({ palavra })),
+          skipDuplicates: true
+        });
+
         await tx.propostaPalavraChave.createMany({
-          data: palavrasChave.map((palavra) => ({
+          data: unique.map((palavra) => ({
             id_proposta: pid,
             palavra
           }))
@@ -209,6 +223,5 @@ async function getIndicadores() {
     _debug: 'ok-repository',
   }
 }*/
-
 
 module.exports = { listPublic, listByOrientador, findById, create, update, remove, getIndicadores };

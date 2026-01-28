@@ -1,20 +1,41 @@
 // backend/src/middlewares/requireAuth.js
 const { verifyToken } = require('../modules/auth/services/jwt')
 const { getAuthEnabled } = require('../config/runtimeFlags')
+const { prisma } = require('../config/prisma')
 
-function requireAuth(req, res, next) {
-  // ✅ MODO DEV: sem autenticação (flag runtime)
+async function requireAuth(req, res, next) {
+  // ✅ Autenticação DESATIVADA (simulação acadêmica): assume Docente ID=1 logado
+  // Regra final do projeto: não há variáveis DEV/PROD nem usuário DEV via .env.
   if (!getAuthEnabled()) {
-    req.user = {
-      id_docente: String(process.env.DEV_DOCENTE_ID ?? '1'),
-      email: process.env.DEV_DOCENTE_EMAIL ?? 'dev.docente@local',
-      nome: process.env.DEV_DOCENTE_NOME ?? 'Docente DEV',
-      role: 'DOCENTE'
+    try {
+      const docente = await prisma.docente.findUnique({
+        where: { id_docente: 1 },
+        select: { id_docente: true, nome: true, email: true }
+      })
+
+      if (!docente) {
+        return res.status(503).json({
+          error: 'Docente ID=1 não existe. Execute o seed para garantir o bootstrap acadêmico.'
+        })
+      }
+
+      req.user = {
+        id_docente: String(docente.id_docente),
+        email: docente.email || 'docente.simulado@local',
+        nome: docente.nome || 'Docente (Simulação)',
+        role: 'DOCENTE',
+        simulated: true
+      }
+
+      return next()
+    } catch {
+      return res.status(503).json({
+        error: 'Falha ao obter o Docente ID=1 para simulação acadêmica.'
+      })
     }
-    return next()
   }
 
-  // ✅ MODO AUTH: exige JWT
+  // ✅ OAuth/JWT ativo: exige Bearer JWT
   const header = req.headers.authorization || ''
   const [type, token] = header.split(' ')
 

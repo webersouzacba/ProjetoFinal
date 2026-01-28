@@ -18,7 +18,7 @@
           icon="bi bi-people"
         >
           <template #actions>
-            <RouterLink v-if="canManage" class="btn btn-outline-primary" to="/docentes/novo">
+            <RouterLink class="btn btn-outline-primary" to="/docentes/novo">
               <i class="bi bi-plus-lg me-1" />Novo docente
             </RouterLink>
           </template>
@@ -53,7 +53,6 @@
                     </RouterLink>
 
                     <RouterLink
-                      v-if="canManage"
                       class="btn btn-sm btn-outline-secondary"
                       :to="`/docentes/${d.id_docente}/editar`"
                       title="Editar"
@@ -62,7 +61,6 @@
                     </RouterLink>
 
                     <button
-                      v-if="canManage"
                       class="btn btn-sm btn-outline-danger"
                       type="button"
                       title="Excluir"
@@ -82,10 +80,6 @@
               </tr>
             </tbody>
           </table>
-
-          <div class="text-muted small mt-2">
-            * Editar/Excluir disponíveis apenas para docente autenticado.
-          </div>
         </div>
       </div>
     </div>
@@ -93,22 +87,18 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { api } from '../../../services/apiClient'
-import { useAuthStore } from '../../../stores/auth'
 import { useUiStore } from '../../../stores/ui'
 import EmptyState from '../../../components/ui/EmptyState.vue'
 
 const emit = defineEmits(['deleted'])
 
 const router = useRouter()
-const auth = useAuthStore()
 const ui = useUiStore()
 
 const deletingId = ref('')
-
-const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 
 defineProps({
   items: { type: Array, default: () => [] },
@@ -122,7 +112,6 @@ function goDetail(id) {
 
 async function handleDeleteRow(d) {
   if (!d?.id_docente) return
-  if (!canManage.value) return
 
   const ok = window.confirm(
     `Confirma excluir o docente #${d.id_docente}?\n\nEsta ação não pode ser desfeita.`

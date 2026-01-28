@@ -109,10 +109,7 @@
           <div class="text-muted small mt-3">
             Total: {{ propostas.length }}
           </div>
-      <div v-if="!canManage" class="alert alert-warning mt-3" role="alert">
-        <strong>Ambiente académico:</strong> o cadastro/edição de docentes está disponível sem login
-        para facilitar a validação da prova de conceito (simulação).
-      </div>
+
 
         </div>
       </div>
@@ -127,7 +124,6 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import PageHeader from '../../components/layout/PageHeader.vue'
 import { api } from '../../services/apiClient'
-import { useAuthStore } from '../../stores/auth'
 import { useUiStore } from '../../stores/ui'
 import { deleteDocente, normalizeApiError } from '../../services/api'
 
@@ -139,9 +135,7 @@ const loading = ref(false)
 const error = ref(null)
 const docente = ref(null)
 
-const auth = useAuthStore()
 const ui = useUiStore()
-const canManage = computed(() => auth.isAuthenticated && auth.user?.role === 'DOCENTE')
 
 const deleting = ref(false)
 

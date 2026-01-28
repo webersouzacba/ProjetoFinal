@@ -22,6 +22,14 @@ function decodeJwtPayload(token) {
   }
 }
 
+/**
+ * Store de autenticação.
+ * Política final do projeto:
+ * - OAuth/JWT é o modo padrão (authEnabled=true).
+ * - Quando a autenticação é desativada via UI, o front cria uma sessão simulada
+ *   para refletir "Docente ID=1" logado (apenas para avaliação acadêmica).
+ */
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || '',
@@ -30,7 +38,8 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (s) => Boolean(s.token),
-    isDocente: (s) => Boolean(s.token) && s.user?.role === 'DOCENTE'
+    isDocente: (s) => Boolean(s.token) && s.user?.role === 'DOCENTE',
+    isSimulated: (s) => s.token === 'SIM' && s.user?.simulated === true
   },
 
   actions: {
@@ -59,6 +68,9 @@ export const useAuthStore = defineStore('auth', {
     validateLocalToken({ leewaySeconds = 30 } = {}) {
       if (!this.token) return { ok: false, reason: 'missing' }
 
+      // Sessão simulada não é JWT
+      if (this.token === 'SIM') return { ok: true }
+
       const payload = decodeJwtPayload(this.token)
       if (!payload || typeof payload.exp !== 'number') {
         this.clearSession()
@@ -81,6 +93,9 @@ export const useAuthStore = defineStore('auth', {
         return null
       }
 
+      // Sessão simulada não chama /me
+      if (this.token === 'SIM') return this.user
+
       const v = this.validateLocalToken()
       if (!v.ok) return null
 
@@ -100,15 +115,13 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * MODO DEV (authEnabled=false)
-     * Simula um docente logado (por padrão, id=1) para:
-     * - validar controles de autorização no front-end;
-     * - exibir estado no cabeçalho.
+     * Simulação acadêmica (authEnabled=false)
+     * Assume "Docente ID=1" como logado para permitir validação funcional completa.
      */
-    async bootstrapDevDocente({ idDocente = 1 } = {}) {
-      // Se já existe uma sessão DEV válida, não faz nada.
+    async bootstrapSimulatedDocente({ idDocente = 1 } = {}) {
+      // Se já existe uma sessão simulada válida, não faz nada.
       if (
-        this.token === 'DEV' &&
+        this.token === 'SIM' &&
         this.user?.role === 'DOCENTE' &&
         String(this.user?.id_docente) === String(idDocente)
       ) {
@@ -117,25 +130,25 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const { data } = await api.get(`/api/docentes/${idDocente}`)
-        const devUser = {
+        const simUser = {
           ...data,
           role: 'DOCENTE',
           id_docente: data?.id_docente ?? idDocente,
-          dev: true
+          simulated: true
         }
-        this.setSession({ token: 'DEV', user: devUser })
-        return devUser
+        this.setSession({ token: 'SIM', user: simUser })
+        return simUser
       } catch {
         // fallback (se BD não tiver o docente 1 ainda)
-        const devUser = {
+        const simUser = {
           id_docente: idDocente,
-          nome: `Docente ${idDocente} (DEV)`,
-          email: 'dev.docente@local',
+          nome: `Docente ${idDocente} (Simulação)`,
+          email: 'docente.simulado@local',
           role: 'DOCENTE',
-          dev: true
+          simulated: true
         }
-        this.setSession({ token: 'DEV', user: devUser })
-        return devUser
+        this.setSession({ token: 'SIM', user: simUser })
+        return simUser
       }
     }
   }
