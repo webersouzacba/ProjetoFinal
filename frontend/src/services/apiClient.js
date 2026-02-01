@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { apiBaseUrl } from './apiBase'
 
-// Axios instance
 export const api = axios.create({
   baseURL: apiBaseUrl(),
   timeout: 15000

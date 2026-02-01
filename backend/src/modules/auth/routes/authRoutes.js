@@ -49,9 +49,23 @@ router.get(
  */
 router.get('/google/callback', (req, res, next) => {
   passport.authenticate('google', { session: false }, (err, user, info) => {
-    if (err) return next(err);
+    // ✅ log detalhado do erro real
+    if (err) {
+      console.error('[OAUTH_CALLBACK_ERROR]', err);
 
-    // passport retorna user=false e info.message='UNAUTHORIZED' quando email não é docente cadastrado
+      const { getFrontendBase } = require('../../../utils/publicUrl');
+      const frontend = getFrontendBase(req);
+      const redirectUrl = new URL(frontend);
+      redirectUrl.pathname = '/login';
+
+      // Mensagem curta + técnica (DEV)
+      redirectUrl.searchParams.set('error', 'Falha no OAuth (callback).');
+      redirectUrl.searchParams.set('code', 'OAUTH_CALLBACK_ERROR');
+      redirectUrl.searchParams.set('detail', String(err.message || err));
+
+      return res.redirect(redirectUrl.toString());
+    }
+
     req.user = user || null;
     req.authInfo = info || null;
 
@@ -60,3 +74,5 @@ router.get('/google/callback', (req, res, next) => {
 });
 
 module.exports = { authRoutes: router };
+
+

@@ -27,7 +27,8 @@ function authCallback(req, res) {
       return res.status(403).json(payload);
     }
 
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:9102';
+    const { getFrontendBase } = require('../../../utils/publicUrl')
+    const frontend = getFrontendBase(req)
     const redirectUrl = new URL(frontend);
     redirectUrl.pathname = '/login';
     redirectUrl.searchParams.set('error', payload.error);

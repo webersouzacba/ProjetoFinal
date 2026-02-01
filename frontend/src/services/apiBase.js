@@ -2,6 +2,12 @@
 // Em Vite, variáveis de ambiente expostas ao client precisam começar com VITE_.
 
 export function apiBaseUrl() {
-  // Ex.: http://localhost:9002
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:9002';
+  // Permite override explícito via VITE_API_BASE_URL (fallback)
+  const env = import.meta.env?.VITE_API_BASE_URL
+  if (env && env.trim().length) return env.replace(/\/+$/, '')
+
+  const { protocol, hostname } = window.location
+
+  // Regra simples: backend sempre em 5190 no mesmo host
+  return `${protocol}//${hostname}:5190`
 }
