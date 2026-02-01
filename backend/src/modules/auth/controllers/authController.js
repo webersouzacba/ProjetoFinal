@@ -27,7 +27,7 @@ function authCallback(req, res) {
       return res.status(403).json(payload);
     }
 
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontend = process.env.FRONTEND_URL || 'http://localhost:9102';
     const redirectUrl = new URL(frontend);
     redirectUrl.pathname = '/login';
     redirectUrl.searchParams.set('error', payload.error);
@@ -50,7 +50,7 @@ function authCallback(req, res) {
     });
   }
 
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontend = process.env.FRONTEND_URL || 'http://localhost:9102';
   const redirectUrl = new URL(frontend);
   redirectUrl.pathname = '/auth/callback';
   redirectUrl.searchParams.set('token', token);

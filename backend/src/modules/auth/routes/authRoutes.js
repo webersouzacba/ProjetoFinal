@@ -5,7 +5,7 @@ const { authCallback } = require('../controllers/authController');
 const router = express.Router();
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontend = process.env.FRONTEND_URL || 'http://localhost:9102';
   const redirectToLogin = () => {
     const u = new URL(frontend);
     u.pathname = '/login';
