@@ -8,6 +8,17 @@ const router = express.Router()
  * Endpoint dedicado de indicadores (PÚBLICO)
  * IMPORTANTE: precisa vir antes de '/:id'
  */
+
+/**
+ * @openapi
+ * /api/propostas/indicadores:
+ *   get:
+ *     summary: Obter indicadores agregados de propostas (público)
+ *     tags: [Propostas]
+ *     responses:
+ *       200:
+ *         description: Indicadores (totais por status, totais gerais, etc.)
+ */
 router.get('/indicadores', controller.getIndicadores)
 
 /**
@@ -80,7 +91,50 @@ router.get('/mine/:id', requireAuth, controller.getMine)
  */
 router.post('/mine', requireAuth, controller.createMine)
 
+/**
+ * @openapi
+ * /api/propostas/mine/{id}:
+ *   put:
+ *     summary: Atualizar proposta do docente autenticado (ownership)
+ *     tags: [Propostas]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200: { description: Proposta atualizada }
+ *       401: { description: Não autenticado }
+ *       403: { description: Proibido (não é o docente orientador) }
+ *       404: { description: Proposta não encontrada }
+ */
 router.put('/mine/:id', requireAuth, controller.updateMine)
+
+/**
+ * @openapi
+ * /api/propostas/mine/{id}:
+ *   delete:
+ *     summary: Remover proposta do docente autenticado (ownership)
+ *     tags: [Propostas]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       204: { description: Proposta removida }
+ *       401: { description: Não autenticado }
+ *       403: { description: Proibido (não é o docente orientador) }
+ *       404: { description: Proposta não encontrada }
+ */
 router.delete('/mine/:id', requireAuth, controller.deleteMine)
 
 /**

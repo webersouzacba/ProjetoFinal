@@ -3,7 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const swaggerJSDoc = require('swagger-jsdoc');
 
-const port = process.env.PORT || 9002;
+const port = process.env.PORT || 5190;
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -12,7 +12,10 @@ const swaggerDefinition = {
     version: '1.0.0',
     description: 'Documentação das APIs do backend (Express + Prisma)'
   },
-  servers: [{ url: `http://localhost:${port}`, description: 'Local' }],
+  servers: [
+    { url: `http://localhost:${port}`, description: 'Local' },
+    { url: 'http://webersouza.com.br:5190', description: 'Produção (VPS)' }
+  ],
   components: {
     securitySchemes: {
       bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
