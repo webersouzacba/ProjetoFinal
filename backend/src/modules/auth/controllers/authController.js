@@ -1,4 +1,37 @@
+// backend/src/modules/auth/controllers/authController.js
 const { signToken } = require('../services/jwt');
+const { getFrontendBase } = require('../../../utils/publicUrl');
+
+function normalizePrefix(prefix) {
+  if (!prefix) return '';
+  let p = String(prefix).trim();
+  if (!p || p === '/') return '';
+  if (!p.startsWith('/')) p = `/${p}`;
+  p = p.replace(/\/+$/, ''); // remove trailing slash
+  return p;
+}
+
+function buildFrontendRedirect(req, targetPathname) {
+  // Base do frontend (preferencialmente derivada do host público)
+  const base = getFrontendBase(req);
+
+  // Prefixo quando o frontend está servido em subpath (/projetofinal)
+  // 1) Header (ideal quando usa proxy)
+  // 2) Env como fallback
+  const prefix =
+    normalizePrefix(req.headers['x-forwarded-prefix']) ||
+    normalizePrefix(process.env.FRONTEND_BASE_PATH);
+
+  const url = new URL(base);
+
+  // monta pathname final: {prefix}{targetPathname}
+  const path = targetPathname.startsWith('/')
+    ? targetPathname
+    : `/${targetPathname}`;
+
+  url.pathname = `${prefix}${path}`;
+  return url;
+}
 
 function authCallback(req, res) {
   const docente = req.user;
@@ -8,7 +41,6 @@ function authCallback(req, res) {
   const infoMsg = req.authInfo?.message ? String(req.authInfo.message) : '';
 
   if (!docente) {
-    // Mensagem padrão “não autorizado”
     let error =
       'Conta Google não autorizada: utilize um e-mail de docente cadastrado.';
     let code = 'DOCENTE_NAO_CADASTRADO';
@@ -27,10 +59,7 @@ function authCallback(req, res) {
       return res.status(403).json(payload);
     }
 
-    const { getFrontendBase } = require('../../../utils/publicUrl')
-    const frontend = getFrontendBase(req)
-    const redirectUrl = new URL(frontend);
-    redirectUrl.pathname = '/login';
+    const redirectUrl = buildFrontendRedirect(req, '/login');
     redirectUrl.searchParams.set('error', payload.error);
     redirectUrl.searchParams.set('code', payload.code);
     return res.redirect(redirectUrl.toString());
@@ -51,9 +80,7 @@ function authCallback(req, res) {
     });
   }
 
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:9102';
-  const redirectUrl = new URL(frontend);
-  redirectUrl.pathname = '/auth/callback';
+  const redirectUrl = buildFrontendRedirect(req, '/auth/callback');
   redirectUrl.searchParams.set('token', token);
   return res.redirect(redirectUrl.toString());
 }

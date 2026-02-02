@@ -21,7 +21,11 @@ const { documentosRoutes } = require('./modules/documentos/routes/documentosRout
 const { getDocsDir } = require('./modules/documentos/services/documentosService')
 const { errorHandler } = require('./middlewares/errorHandler')
 
-const app = express()
+
+const app = express();
+
+app.set('trust proxy', true);
+
 
 // Middlewares base
 if (process.env.NODE_ENV === 'production') {
