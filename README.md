@@ -1,93 +1,185 @@
-# Projeto Final — PWA (MEIW/UAb+UTAD)
-**Prova de conceito: Gestão de Propostas de Temas de TCC**
+# Projeto Final — Programação Web Avançada (PWA)
 
-Aplicação Web full-stack (SPA + API REST) para apoiar o processo académico de recolha e gestão de **propostas de temas**, em linha com o enunciado do Projeto Final.
+Aplicação Web desenvolvida no âmbito da unidade curricular **Programação Web Avançada**, do  
+**Mestrado em Engenharia Informática e Tecnologias Web (MEIW)** — parceria **Universidade Aberta (UAb)** e **Universidade de Trás-os-Montes e Alto Douro (UTAD)**.
 
----
-
-## 1) Stack e estrutura do repositório
-
-- **Frontend**: Vue 3 + Vite + Vue Router + Pinia + Bootstrap 5
-- **Backend**: Node.js + Express + Prisma ORM
-- **Banco de dados**: PostgreSQL (Docker Compose em `infra/`)
-- **Autenticação**: Google OAuth2 + JWT (Bearer)
-- **API Docs**: Swagger UI em `/api-docs` e JSON em `/api-docs.json`
-- **Documentos do projeto**: página pública em `/documentos` e arquivos publicados em `/docs/<arquivo>`
-
-Estrutura do monorepo:
-- `infra/` — PostgreSQL local (Docker Compose)
-- `backend/` — API REST (Express + Prisma)
-- `frontend/` — SPA (Vue 3 + Vite)
-- `docs/` — documentos do projeto (PDF/MD)
+O projeto consiste em uma **aplicação web para gestão de propostas de temas de projeto final de curso**, permitindo que docentes criem, editem e removam propostas, bem como associem coorientadores, alunos e palavras-chave, respeitando regras de autenticação e autorização.
 
 ---
 
-## 2) Política final de permissões
+## 📌 Contexto Académico
 
-A aplicação adota **uma política única e consistente** (sem perfis DEV/PROD via `.env`):
+- **UC:** Programação Web Avançada  
+- **Ano Letivo:** 2025/2026  
+- **Aluno:** Weber Marcelo Guirra de Souza (UTAD: al77734)  
+- **Tarefas associadas:**  
+  - **Tarefa 5.1** — Especificação da Aplicação  
+  - **Tarefa 5.2** — Desenvolvimento da Aplicação (Front-end e Back-end)
 
-1) **OAuth/JWT ativo (padrão) e utilizador deslogado**
-- **CRUD de Docentes**: permitido mesmo sem login (**bootstrap académico**), para que o professor avaliador possa cadastrar um docente com o seu e-mail Google antes do primeiro acesso.
-- **Demais funcionalidades (Propostas/Alunos)**: exigem login.
-
-2) **Docente autenticado**
-- Acesso total às funcionalidades do sistema.
-
-3) **Autenticação desativada (Simulação académica)**
-- Acesso total, simulando um docente logado (**Docente ID=1**), com indicação visual no cabeçalho.
-- O `seed` garante a existência do Docente ID=1.
+Este repositório corresponde à **implementação final** descrita no relatório da **Tarefa 5.2**.
 
 ---
 
-## 3) Executar localmente (passo a passo)
+## 🧩 Visão Geral da Aplicação
 
-### 3.1) Subir o PostgreSQL (Docker)
+A solução é composta por:
+
+- **Front-end:** Single Page Application (SPA)  
+- **Back-end:** API REST  
+- **Persistência:** Base de dados relacional PostgreSQL  
+- **Autenticação:** Google OAuth2  
+- **Documentação da API:** Swagger (OpenAPI)
+
+A comunicação entre front-end e back-end é realizada via **HTTP/JSON**, mantendo separação clara de responsabilidades.
+
+---
+
+## 🗂 Estrutura do Repositório
+
+```
+ProjetoFinal/
+├── frontend/   # SPA desenvolvida em Vue.js
+├── backend/    # API REST desenvolvida em Node.js / Express
+├── infra/      # Infraestrutura (Docker Compose - PostgreSQL)
+├── docs/       # Documentos do projeto (PDFs e relatórios)
+└── README.md
+```
+
+O repositório **não contém dependências (`node_modules`) nem ficheiros sensíveis (`.env`)**.  
+São disponibilizados apenas ficheiros `.env.example` para configuração local.
+
+---
+
+## 🚀 Acesso Rápido (Avaliação)
+
+### Ambiente de Produção (VPS) — recomendado para avaliação
+
+- **Aplicação (Front-end):**  
+  http://webersouza.com.br/projetofinal/
+
+- **Documentos do Projeto:**  
+  http://webersouza.com.br/projetofinal/documentos
+
+- **Documentação da API (Swagger):**  
+  http://webersouza.com.br:5190/api-docs
+
+---
+
+## ▶️ Execução em Ambiente Local (Localhost)
+
+### 1️⃣ Base de Dados (PostgreSQL)
+
+A base de dados é executada via Docker.
+
 ```bash
 cd infra
 docker compose up -d
 ```
 
-### 3.2) Backend (API)
-1. Entre em `backend/` e crie o arquivo `.env` a partir de `.env.example`.
-2. Instale dependências e inicialize o banco:
+---
+
+### 2️⃣ Back-end (API REST)
 
 ```bash
 cd backend
+cp .env.example .env
 npm install
 npm run prisma:migrate
 npm run seed
 npm run dev
 ```
 
-A API sobe em `http://localhost:9002`.
+- **API:** http://localhost:5190  
+- **Swagger:** http://localhost:5190/api-docs  
 
-### 3.3) Frontend (SPA)
-1. Entre em `frontend/` e crie o arquivo `.env` a partir de `.env.example`.
-2. Instale dependências e rode a aplicação:
+O acesso direto ao banco de dados **não é necessário para avaliação**, uma vez que todas as funcionalidades podem ser validadas por meio da interface web e da API.
+
+---
+
+### 3️⃣ Front-end (SPA)
 
 ```bash
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-A SPA sobe em `http://localhost:5173`.
+- **Aplicação:** http://localhost:9102
 
 ---
 
-## 4) Documentos do projeto
+## 🔐 Autenticação, Permissões e Simulação
 
-- Página pública: `http://localhost:5173/documentos`
-- Arquivos são servidos pelo backend: `http://localhost:9002/docs/<arquivo>`
-- Listagem é obtida via API pública: `GET http://localhost:9002/api/documentos`
+- Autenticação via **Google OAuth2**.  
+- O utilizador inicia **não autenticado**.  
+- O **CRUD de Docentes é permitido sem autenticação**, possibilitando o *bootstrap académico*.  
+- Após autenticação, o docente tem acesso completo às funcionalidades.
 
-> Para adicionar documentos, basta colocar arquivos (PDF/MD/TXT) em `docs/`.
+### 🔁 Modo de Simulação Académica
+
+A opção **“Desativar autenticação”**:
+
+- simula um docente autenticado (Docente ID = 1);
+- é indicada visualmente na interface;
+- permite validar todas as funcionalidades sem dependência de contas externas.
 
 ---
 
-## 5) Observações para entrega (ZIP)
+## ✅ Roteiro de Testes Funcionais (Avaliação)
 
-Conforme a política adotada no projeto:
-- O **ZIP final de submissão** deve ser gerado a partir do repositório GitHub.
-- O repositório deve conter apenas o necessário (com `.gitignore` adequado).
-- Arquivos `.env` (com segredos) **não** devem ser versionados; apenas `.env.example`.
+### Com autenticação Google
+
+1. Acessar a aplicação sem login;  
+2. Consultar docentes;  
+3. Cadastrar um docente com e-mail Google;  
+4. Realizar login com a mesma conta Google;  
+5. Criar, editar e remover propostas;  
+6. Associar coorientadores, alunos e palavras-chave;  
+7. Consultar documentos do projeto.
+
+### Sem autenticação (modo de simulação)
+
+1. Acessar a aplicação sem login;  
+2. Consultar docentes e documentos;  
+3. Na página principal, clicar em **“Desativar autenticação”**;  
+4. Validar acesso total às funcionalidades;  
+5. Criar, editar e remover propostas;  
+6. Associar coorientadores, alunos e palavras-chave.
+
+---
+
+## 🧪 Tecnologias Utilizadas
+
+### Front-end
+
+- Vue.js 3 + Vite  
+- Vue Router  
+- Pinia  
+- Bootstrap 5  
+- VeeValidate + Yup  
+
+### Back-end
+
+- Node.js + Express  
+- PostgreSQL  
+- Prisma ORM  
+- Google OAuth2 (Passport.js)  
+- OpenAPI / Swagger  
+
+Configurações sensíveis são externalizadas por **variáveis de ambiente**, seguindo boas práticas de segurança.
+
+---
+
+## 📄 Documentos do Projeto
+
+Os documentos de entrega e apoio encontram-se no diretório `docs/` e são disponibilizados pela própria aplicação:
+
+- **Listagem:** `/documentos`  
+- **Visualização / download:** `/docs/<arquivo>`
+
+---
+
+## 🏁 Considerações Finais
+
+Este repositório disponibiliza uma **prova de conceito funcional**, alinhada com a especificação definida na Tarefa 5.1 e orientada à replicação e avaliação conforme os objetivos da **Tarefa 5.2**.
